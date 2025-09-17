@@ -29,23 +29,32 @@ Database → Data Validation → Cleaning → Transformation → Training Data
 ### 3. Training Phase
 
 ```text
-Training Data → Feature Engineering → Model Training → Trained Model
+Training Data → Feature Extraction → Model Training → Trained Model
 ```
 
-- **Feature Engineering**: Create features for recommendation algorithm
-- **Training**: Train ML model (content-based filtering for game recommendations)
-- **Output**: Serialized model ready for serving
+- **Feature Extraction**:
+  - Text features: TF-IDF vectorization of summaries/names (1000 features)
+  - Categorical features: One-hot encoding for genres, platforms, themes
+  - Numerical features: Rating, rating count, release year, summary length
+- **Model Training**: Content-based recommendation model with cosine similarity
+- **Output**: Serialized model (pickle) ready for serving (~23MB)
+- **Performance**: <0.5s training on 1230 games
 - **Scaling**: Same training pipeline for 100 games and 350k games
 
 ### 4. Deployment Phase
 
 ```text
-Trained Model → Model Serving → API Endpoints
+Trained Model → Model Loading → FastAPI Serving → API Endpoints
 ```
 
-- **Model Serving**: Deploy model to Cloud Run
-- **API Endpoints**: Expose model predictions via REST API
-- **Monitoring**: Track model performance and drift
+- **Model Loading**: Load trained model from pickle file at startup
+- **API Serving**: FastAPI application with recommendation endpoints
+- **API Endpoints**:
+  - `GET /games/{id}/recommendations` - Game-based recommendations
+  - `POST /recommendations/text` - Text-based recommendations
+  - `GET /games/search` - Game search functionality
+- **Performance**: Real-time recommendations (<100ms response time)
+- **Monitoring**: Model health check endpoint
 
 ## Web Application Flow
 
@@ -61,10 +70,12 @@ User → Frontend → API Gateway → Recommendation Service
 User Query → Feature Extraction → Model Prediction → Ranking → Response
 ```
 
-- **Feature Extraction**: Convert user input to model features
-- **Model Prediction**: Get recommendations from ML model
-- **Ranking**: Sort and filter recommendations
-- **Response**: Return formatted recommendations to user
+- **Feature Extraction**:
+  - For game ID: Extract features from existing game data
+  - For text query: Extract features from query text using same TF-IDF vectorizer
+- **Model Prediction**: Cosine similarity calculation with trained model
+- **Ranking**: Sort by similarity score, filter by top_k parameter
+- **Response**: Return formatted recommendations with game details
 
 ## Data Dependencies
 
