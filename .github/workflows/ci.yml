@@ -64,6 +64,7 @@ jobs:
   build:
     name: Build Docker Images
     runs-on: ubuntu-latest
+    environment: staging
     needs: test
 
     strategy:
