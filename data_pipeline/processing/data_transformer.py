@@ -337,11 +337,13 @@ class DataTransformer:
             "has_rating": f"{has_rating}/{total_games} ({has_rating/total_games*100:.1f}%)",
             "has_genres": f"{has_genres}/{total_games} ({has_genres/total_games*100:.1f}%)",
             "has_platforms": f"{has_platforms}/{total_games} ({has_platforms/total_games*100:.1f}%)",
-            "avg_rating": round(
-                sum(g["rating"] for g in clean_games if g["rating"]) / has_rating, 1
-            )
-            if has_rating
-            else 0,
+            "avg_rating": (
+                round(
+                    sum(g["rating"] for g in clean_games if g["rating"]) / has_rating, 1
+                )
+                if has_rating
+                else 0
+            ),
             "avg_genres_per_game": round(
                 sum(len(g["genre_names"]) for g in clean_games) / total_games, 1
             ),

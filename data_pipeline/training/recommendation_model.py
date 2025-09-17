@@ -238,9 +238,11 @@ class ContentBasedRecommendationModel:
                     "rating": game.get("rating", 0),
                     "genres": game.get("genre_names", []),
                     "platforms": game.get("platform_names", []),
-                    "summary": game.get("summary", "")[:200] + "..."
-                    if len(game.get("summary", "")) > 200
-                    else game.get("summary", ""),
+                    "summary": (
+                        game.get("summary", "")[:200] + "..."
+                        if len(game.get("summary", "")) > 200
+                        else game.get("summary", "")
+                    ),
                 }
             )
 
@@ -339,9 +341,11 @@ class ContentBasedRecommendationModel:
                         "rating": game.get("rating", 0),
                         "genres": game.get("genre_names", []),
                         "platforms": game.get("platform_names", []),
-                        "summary": game.get("summary", "")[:200] + "..."
-                        if len(game.get("summary", "")) > 200
-                        else game.get("summary", ""),
+                        "summary": (
+                            game.get("summary", "")[:200] + "..."
+                            if len(game.get("summary", "")) > 200
+                            else game.get("summary", "")
+                        ),
                     }
                 )
 
