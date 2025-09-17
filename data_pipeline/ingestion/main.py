@@ -169,12 +169,15 @@ class IGDBDataIngestion:
         print(f"✅ Fetched {len(platforms)} platforms")
         return platforms
 
-    def fetch_games_sample(self, sample_size: int = 10) -> List[Dict[str, Any]]:
+    def fetch_games_sample(
+        self, sample_size: int = 10, strategy: str = "balanced"
+    ) -> List[Dict[str, Any]]:
         """
         Fetch sample of games for development and testing.
 
         Args:
             sample_size: Number of games to fetch (default: 10 for testing)
+            strategy: Fetching strategy ("balanced", "high_rated", "recent")
 
         Returns:
             List of game dictionaries

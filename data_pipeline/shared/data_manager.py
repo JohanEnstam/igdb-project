@@ -44,7 +44,7 @@ class DataManager:
             >>> dm.create_tables()
         """
         self.db_path = db_path
-        self.db = None
+        self.db: sqlite3.Connection = None  # type: ignore
         self._connect()
         self.create_tables()
         self.create_indexes()
