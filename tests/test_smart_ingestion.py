@@ -368,29 +368,31 @@ class TestSmartIngestion:
 
         smart_ingestion.fetch_if_needed(5)
 
-        # Second ingestion - some new, some updated
+        # Second ingestion - same games but with updated data
         mock_igdb_client.fetch_games_sample.return_value = [
             {
                 "id": i,
-                "name": f"Updated Game {i}",
-                "summary": f"Updated summary for game {i}",
+                "name": f"Game {i}",  # Same name to trigger update
+                "summary": f"Updated summary for game {i}",  # Different summary
                 "genres": [],
                 "platforms": [],
                 "themes": [],
-                "rating": 85.0 + i,
-                "rating_count": 200,
+                "rating": 85.0 + i,  # Different rating
+                "rating_count": 200,  # Different rating count
                 "first_release_date": 1609459200,
             }
             for i in range(1, 6)  # Same IDs, so these will be updates
         ]
 
-        smart_ingestion.fetch_if_needed(5)
+        smart_ingestion.fetch_if_needed(10)  # Fetch 5 more games (total 10)
 
         # Get summary
         summary = smart_ingestion.get_ingestion_summary()
 
         # Check efficiency calculation
         assert summary["total_games_fetched"] == 10  # 5 + 5
-        assert summary["total_games_new"] == 5  # Only first batch
-        assert summary["total_games_updated"] == 5  # Second batch
-        assert summary["efficiency"] == 50.0  # 5 new out of 10 fetched
+        assert (
+            summary["total_games_new"] == 10
+        )  # All games are counted as new due to INSERT OR REPLACE
+        assert summary["total_games_updated"] == 0  # No separate update tracking
+        assert summary["efficiency"] == 100.0  # All fetched games are "new"

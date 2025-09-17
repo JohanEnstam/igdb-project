@@ -118,7 +118,7 @@ class SmartIngestion:
                     games_fetched=0,
                     games_new=0,
                     games_updated=0,
-                    status="failed",
+                    status="error",
                     error_message="No games fetched from IGDB",
                 )
                 return current_count
@@ -152,7 +152,7 @@ class SmartIngestion:
                 games_fetched=0,
                 games_new=0,
                 games_updated=0,
-                status="failed",
+                status="error",
                 error_message=str(e),
             )
             raise
@@ -201,7 +201,7 @@ class SmartIngestion:
             elif strategy == "recent":
                 games = self._fetch_recent_games(needed)
             else:  # balanced
-                games = self.igdb_client.fetch_games_sample(needed)
+                games = self.igdb_client.fetch_games_sample(needed, strategy=strategy)
 
             if not games:
                 logger.warning(f"No games fetched using '{strategy}' strategy")
@@ -210,7 +210,7 @@ class SmartIngestion:
                     games_fetched=0,
                     games_new=0,
                     games_updated=0,
-                    status="failed",
+                    status="error",
                     error_message=f"No games fetched using '{strategy}' strategy",
                 )
                 return current_count
@@ -241,7 +241,7 @@ class SmartIngestion:
                 games_fetched=0,
                 games_new=0,
                 games_updated=0,
-                status="failed",
+                status="error",
                 error_message=str(e),
             )
             raise
@@ -312,8 +312,15 @@ class SmartIngestion:
                 "current_games": current_count,
                 "total_batches": stats.get("total_batches", 0),
                 "total_fetched": stats.get("total_fetched", 0),
+                "total_games_fetched": stats.get(
+                    "total_fetched", 0
+                ),  # Alias for compatibility
                 "total_new": stats.get("total_new", 0),
+                "total_games_new": stats.get("total_new", 0),  # Alias for compatibility
                 "total_updated": stats.get("total_updated", 0),
+                "total_games_updated": stats.get(
+                    "total_updated", 0
+                ),  # Alias for compatibility
                 "efficiency": self._calculate_efficiency(stats),
             }
 
