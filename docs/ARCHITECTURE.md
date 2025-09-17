@@ -19,6 +19,18 @@
                        │   Web App API   │◀───│   Web Frontend  │
                        │   (FastAPI)     │    │    (Future)     │
                        └─────────────────┘    └─────────────────┘
+                                │
+                                ▼
+                       ┌─────────────────┐
+                       │   CI/CD Pipeline│
+                       │ (GitHub Actions)│
+                       └─────────────────┘
+                                │
+                                ▼
+                       ┌─────────────────┐
+                       │   Cloud Run     │
+                       │   (GCP)         │
+                       └─────────────────┘
 ```
 
 ## Data Pipeline (Factory)
@@ -66,25 +78,59 @@ User → API → ML Model → Recommendations → User
 - `GET /genres`, `/platforms` - List available options
 - `GET /model/status` - Model health check
 
+## CI/CD Pipeline
+
+### GitHub Actions Workflows
+
+#### **CI Pipeline** (Continuous Integration)
+- **Tests**: Unit tests, integration tests (41s)
+- **Linting**: Black formatting, Flake8, pre-commit hooks
+- **Container Builds**: All 4 services (ingestion, processing, training, api)
+- **Container Registry**: Push to Google Container Registry (GCR)
+- **Security**: Trivy vulnerability scanning (currently disabled)
+
+#### **CD Pipeline** (Continuous Deployment)
+- **Environment Management**: Staging/production environments
+- **GCP Authentication**: Service account with environment secrets
+- **Cloud Run Deployment**: Automated deployment to GCP
+- **Health Checks**: Container startup and endpoint validation
+
+### Container Architecture
+
+#### **Docker Services**
+1. **igdb-ingestion**: Data collection from IGDB API
+2. **igdb-processing**: Data cleaning and transformation
+3. **igdb-training**: ML model training pipeline
+4. **igdb-api**: FastAPI web application (port 8080)
+
+#### **Container Registry**
+- **Registry**: `gcr.io/igdb-recommendation-system/`
+- **Images**: Automatically built and pushed on main branch
+- **Tags**: Latest, commit SHA, branch names
+
 ## Infrastructure
 
 ### Current Implementation
 
 - **SQLite**: Local data storage for development
 - **Pickle**: Model serialization and storage
-- **FastAPI**: Local API serving
-- **Docker**: Containerization (configured)
+- **FastAPI**: Local API serving (port 8000) / Cloud Run (port 8080)
+- **Docker**: Containerization (fully configured)
+- **GitHub Actions**: CI/CD automation (working)
+- **Google Container Registry**: Image storage (working)
+- **Cloud Run**: Deployment target (configuration issues)
 
 ### Future GCP Services
 
 - **Cloud Storage**: Raw data storage
 - **BigQuery**: Processed data warehouse
-- **Cloud Run**: Model serving and API hosting
 - **Cloud Functions**: Event-driven processing
 - **Cloud Composer**: Data pipeline orchestration
 
-### Deployment
+### Deployment Status
 
-- **Terraform**: Infrastructure as Code (Future)
-- **Docker**: Containerization (Ready)
-- **GitHub Actions**: CI/CD automation (Future)
+- **Docker**: ✅ Fully working
+- **GitHub Actions**: ✅ CI working, CD has Cloud Run issues
+- **Container Registry**: ✅ Working
+- **Cloud Run**: ❌ Deployment timeout issues
+- **Terraform**: Future infrastructure as code
