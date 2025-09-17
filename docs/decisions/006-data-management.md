@@ -12,18 +12,25 @@ Need to design data management strategy for the IGDB data pipeline that handles:
 - Data quality and integrity across pipeline stages
 
 ## Decision
-Implement **Database-First** approach with **Incremental Ingestion** and **Pipeline State Tracking**.
+Implement **SQLite-Only** approach with **Smart Ingestion** and **Pipeline State Tracking**.
 
 ### Data Storage Strategy
 ```python
 # Development: SQLite
-# Production: PostgreSQL + Cloud Storage
+# Production: SQLite + Cloud Storage Backup
 
 class DataPipeline:
-    def __init__(self):
-        self.db = GameDatabase()  # SQLite/PostgreSQL
-        self.storage = CloudStorage()  # GCP Cloud Storage
+    def __init__(self, db_path="data/games.db"):
+        self.db = sqlite3.connect(db_path)  # SQLite only
+        self.storage = CloudStorage()  # GCP Cloud Storage for backup
 ```
+
+### Why SQLite-Only?
+- **350,000 games** is not "big data" - SQLite handles this easily
+- **Simple queries** (filter, sort, search) - SQLite is optimized for this
+- **Single-server deployment** - web app and database on same server
+- **Cost-effective** - $0 database costs vs $50-200/month for PostgreSQL
+- **Development simplicity** - no database server to manage
 
 ### Database Schema
 ```sql
@@ -64,41 +71,44 @@ CREATE TABLE processing_status (
 );
 ```
 
-### Incremental Ingestion Strategy
+### Smart Ingestion Strategy
 ```python
-def ingest_incremental(self, batch_size=100):
-    # 1. Get last sync timestamp
-    last_sync = self.db.get_last_sync()
+def smart_ingest(self, target_count=100):
+    # 1. Check current database count
+    current_count = self.db.count_games()
 
-    # 2. Fetch batch from IGDB (sorted by updated_at)
-    query = f"""
-    fields *;
-    where updated_at > {last_sync};
-    limit {batch_size};
-    sort updated_at asc;
-    """
+    if current_count >= target_count:
+        logger.info(f"✅ Already have {current_count} games, no need to fetch")
+        return current_count
 
-    # 3. Deduplicate and store
-    new_games = self._deduplicate_and_store(games)
+    # 2. Calculate how many more games needed
+    needed = target_count - current_count
+    logger.info(f"📥 Need {needed} more games, fetching from IGDB...")
 
-    # 4. Update sync timestamp
-    self.db.update_last_sync()
+    # 3. Fetch from IGDB with rate limiting
+    games = self.igdb.fetch_games_sample(needed)
+
+    # 4. Save to SQLite (automatic deduplication via PRIMARY KEY)
+    self.db.save_games(games)
+
+    # 5. Return new count
+    return self.db.count_games()
 ```
 
 ## Rationale
 
-### Why Database-First?
-- **Deduplication**: UNIQUE constraints prevent duplicate games
-- **Data Integrity**: ACID transactions ensure consistency
-- **Query Flexibility**: SQL for complex data operations
-- **Pipeline State**: Easy tracking of processing status
-- **Incremental Updates**: Efficient WHERE clauses for new data
+### Why SQLite-Only?
+- **Simplicity**: File-based database, no server management
+- **Performance**: <1ms queries for 350k games with proper indexing
+- **Cost**: $0 database costs vs $50-200/month for PostgreSQL
+- **Portability**: Database file can be easily backed up and moved
+- **Development**: Perfect for single-developer projects
 
-### Why Incremental Ingestion?
-- **Efficiency**: Only fetch new/updated games
+### Why Smart Ingestion?
+- **Avoid Re-fetching**: Check database count before fetching
 - **Rate Limit Compliance**: Respects IGDB's 4 req/s limit
-- **Cost Optimization**: Reduces API calls and storage
-- **Real-time Updates**: Keep data fresh without full refresh
+- **Cost Optimization**: Reduces unnecessary API calls
+- **Flexibility**: Easy to scale from 100 to 350k games
 
 ### Why Pipeline State Tracking?
 - **Reliability**: Know which games are processed
@@ -109,41 +119,41 @@ def ingest_incremental(self, batch_size=100):
 ## Consequences
 
 ### Positive
-- ✅ Automatic deduplication via database constraints
-- ✅ Efficient incremental updates
+- ✅ Automatic deduplication via PRIMARY KEY constraints
+- ✅ Smart ingestion avoids unnecessary re-fetching
 - ✅ Reliable pipeline state management
 - ✅ Easy data querying and analysis
-- ✅ Scalable to production with PostgreSQL
-- ✅ Backup and recovery capabilities
+- ✅ Zero database infrastructure costs
+- ✅ Simple backup (copy SQLite file)
+- ✅ Perfect for single-server deployment
 
 ### Negative
-- ❌ Database dependency (SQLite/PostgreSQL)
-- ❌ More complex than file-based approach
-- ❌ Requires database schema management
-- ❌ Additional infrastructure for production
+- ❌ Limited concurrent write access (not needed for our use case)
+- ❌ No network access (not needed - same server as web app)
+- ❌ File-based (requires file system access)
 
 ### Risks
-- **Database Locking**: Concurrent access issues
-- **Schema Changes**: Migration complexity
-- **Data Corruption**: Database integrity issues
-- **Performance**: Large dataset query performance
+- **Concurrent Writes**: SQLite locks database during writes (mitigated by offline ingestion)
+- **File Corruption**: SQLite file corruption (mitigated by regular backups)
+- **Performance**: Large dataset queries (mitigated by proper indexing)
+- **Scaling**: If we need >100 concurrent users (migration path to PostgreSQL available)
 
 ## Implementation Plan
 
-### Phase 1: Database Setup
+### Phase 1: SQLite Database Setup
 ```python
-# Create database schema
-# Implement GameDatabase class
-# Add ingestion_log tracking
-# Test with small dataset
+# Create SQLite database schema
+# Implement DataManager class with SQLite
+# Add proper indexing for performance
+# Test with small dataset (100 games)
 ```
 
-### Phase 2: Incremental Ingestion
+### Phase 2: Smart Ingestion
 ```python
-# Implement incremental fetch logic
-# Add deduplication logic
+# Implement smart ingestion logic
+# Add re-fetching avoidance
 # Test with multiple ingestion runs
-# Validate data integrity
+# Validate data integrity and deduplication
 ```
 
 ### Phase 3: Pipeline State Management
@@ -154,12 +164,13 @@ def ingest_incremental(self, batch_size=100):
 # Test pipeline resumability
 ```
 
-### Phase 4: Production Readiness
+### Phase 4: Production Deployment
 ```python
-# Migrate to PostgreSQL
-# Add Cloud Storage backup
+# Deploy SQLite database to production
+# Add Cloud Storage backup automation
 # Implement monitoring and alerting
 # Add data quality checks
+# Create migration path to PostgreSQL if needed
 ```
 
 ## Data Quality Strategy
@@ -177,15 +188,35 @@ def ingest_incremental(self, batch_size=100):
 - **Completeness**: Missing field analysis
 
 ## Future Considerations
+- **Migration Path**: Easy migration to PostgreSQL if scaling needed
 - **Real-time Updates**: Webhook integration with IGDB
 - **Data Versioning**: Track changes over time
 - **Analytics**: Data quality dashboards
-- **Backup Strategy**: Automated backup and recovery
-- **Performance Optimization**: Indexing and query optimization
+- **Backup Strategy**: Automated SQLite file backup to Cloud Storage
+- **Performance Optimization**: SQLite indexing and query optimization
+
+## Migration Path to PostgreSQL
+If we encounter SQLite limitations:
+```python
+# Migration script: SQLite → PostgreSQL
+def migrate_to_postgresql():
+    # 1. Export SQLite data
+    sqlite_data = export_sqlite_data()
+
+    # 2. Create PostgreSQL schema
+    create_postgresql_schema()
+
+    # 3. Import data to PostgreSQL
+    import_to_postgresql(sqlite_data)
+
+    # 4. Update DataManager to use PostgreSQL
+    # 5. Deploy with PostgreSQL connection
+```
 
 ## Success Metrics
 - **Deduplication**: 0% duplicate games in database
-- **Incremental Efficiency**: <10% redundant API calls
+- **Smart Ingestion**: <5% redundant API calls
 - **Pipeline Reliability**: >99% successful ingestion runs
 - **Data Quality**: >95% games with complete required fields
-- **Performance**: <5 minutes for 1000 game batch processing
+- **Performance**: <1ms for simple queries, <100ms for complex queries
+- **Cost**: $0 database costs (vs $50-200/month for PostgreSQL)
