@@ -323,6 +323,12 @@ def main():
         "--full", action="store_true", help="Production mode with full dataset"
     )
     parser.add_argument("--mock", action="store_true", help="Use mock data for testing")
+    parser.add_argument(
+        "--smart", action="store_true", help="Smart ingestion with DataManager"
+    )
+    parser.add_argument(
+        "--limit", type=int, help="Limit number of games to fetch (for smart mode)"
+    )
 
     args = parser.parse_args()
 
@@ -389,8 +395,33 @@ def main():
 
         print("✅ Production data ingestion complete!")
 
+    elif args.smart:
+        print("🚀 Smart Ingestion Mode")
+        print("Using DataManager with SQLite for intelligent data collection...")
+
+        # Import here to avoid circular imports
+        from data_pipeline.shared.data_manager import DataManager
+        from data_pipeline.ingestion.smart_ingestion import SmartIngestion
+
+        # Initialize DataManager and SmartIngestion
+        with DataManager("data/games.db") as dm:
+            si = SmartIngestion(dm, client_id=client_id, client_secret=client_secret)
+
+            # Fetch games using smart ingestion
+            target_count = args.limit or 100
+            count = si.fetch_if_needed(target_count)
+
+            print(f"✅ Smart ingestion complete! Database now has {count} games")
+
+            # Show summary
+            summary = si.get_ingestion_summary()
+            print("📊 Ingestion Summary:")
+            print(f"   - Current games: {summary['current_games']}")
+            print(f"   - Total batches: {summary['total_batches']}")
+            print(f"   - Efficiency: {summary['efficiency']}%")
+
     else:
-        print("❌ Please specify --local, --full, or --mock")
+        print("❌ Please specify --local, --full, --mock, or --smart")
         parser.print_help()
 
 

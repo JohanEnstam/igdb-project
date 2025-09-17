@@ -118,10 +118,92 @@ def process_game_data(raw_data: List[Dict[str, Any]]) -> pd.DataFrame:
 - Include local testing scripts
 
 ### Branch Strategy
-- Use feature branches for new development
-- Create pull requests for code review
-- Merge to main only after tests pass
-- Use semantic versioning for releases
+
+#### Branch Structure
+```
+main                    # Production-ready code
+├── develop            # Integration branch for features
+├── feature/<component>    # Feature development
+├── hotfix/<issue>         # Critical fixes
+└── experiment/<approach>  # Experimental approaches
+```
+
+#### Branch Naming Convention
+- **feature/<component>**: `feature/data-manager`, `feature/smart-ingestion`
+- **feature/<component>-<detail>**: `feature/ml-pipeline`, `feature/api-endpoints`
+- **hotfix/<issue>**: `hotfix/api-rate-limiting`, `hotfix/database-lock`
+- **experiment/<approach>**: `experiment/vector-embeddings`, `experiment/graph-db`
+
+#### When to Create New Branches
+**✅ Create branch for:**
+- **New features** (DataManager, SmartIngestion, ML pipeline)
+- **Stora refactoring** (database schema changes)
+- **Experimentella approaches** (olika ML algoritmer)
+- **Infrastructure changes** (Docker, CI/CD)
+
+**❌ DON'T create branch for:**
+- **Små bugfixes** (use main directly)
+- **Dokumentationsuppdateringar** (use main directly)
+- **Dependency updates** (use main directly)
+
+#### Branch Workflow
+```bash
+# 1. Create feature branch from main
+git checkout main
+git pull origin main
+git checkout -b feature/data-manager
+
+# 2. Develop feature with separate commits
+git add data_pipeline/shared/data_manager.py
+git commit -m "feat(data-manager): implement SQLite-based data manager"
+
+# 3. Test locally
+python -m data_pipeline.ingestion.main --test
+
+# 4. Push and create PR
+git push origin feature/data-manager
+# Create PR: feature/data-manager → main
+
+# 5. Merge after review and tests pass
+git checkout main
+git merge --squash feature/data-manager
+git commit -m "feat(data-manager): implement SQLite-based data management"
+```
+
+#### Merge Criteria
+- ✅ **Alla tests passerar**
+- ✅ **Pre-commit hooks passerar**
+- ✅ **Dokumentation uppdaterad**
+- ✅ **Code review genomförd** (om arbetar med andra)
+- ✅ **Feature fungerar end-to-end**
+
+#### Merge Strategy
+```bash
+# Option 1: Squash and Merge (Rekommenderat för features)
+git checkout main
+git merge --squash feature/data-manager
+git commit -m "feat(data-manager): implement SQLite-based data management
+
+- Add DataManager class with SQLite backend
+- Implement CRUD operations for games data
+- Add schema migration support
+- Include comprehensive unit tests
+- Update documentation with usage examples"
+
+# Option 2: Regular Merge (Behåller commit history)
+git checkout main
+git merge feature/data-manager
+```
+
+#### Rollback Strategy
+```bash
+# Om något går fel:
+git checkout main
+git reset --hard HEAD~1  # Gå tillbaka till föregående commit
+
+# Eller:
+git revert <commit-hash>  # Skapa revert commit
+```
 
 ## Security & Best Practices
 

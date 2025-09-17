@@ -1,4 +1,4 @@
-# ADR-006: Data Management and Storage Strategy
+# ADR-006: Data Management and Middle Ground Development Strategy
 
 ## Status
 Accepted
@@ -10,9 +10,37 @@ Need to design data management strategy for the IGDB data pipeline that handles:
 - Pipeline state management between ingestion, processing, and training
 - Data storage strategy for development and production
 - Data quality and integrity across pipeline stages
+- **Middle Ground Approach**: Balance development speed with production readiness
+- **Scalability**: Develop with small datasets but design for 350k games
 
 ## Decision
-Implement **SQLite-Only** approach with **Smart Ingestion** and **Pipeline State Tracking**.
+Implement **SQLite-Only** approach with **Smart Ingestion**, **Pipeline State Tracking**, and **Middle Ground Development Strategy**.
+
+### Core Principles
+
+1. **Middle Ground Development**
+   - **Develops with 10-100 games** for rapid iteration and testing
+   - **Designs for 350k games** to ensure production scalability
+   - **Avoids unnecessary re-fetching** through smart data management
+   - **Maintains end-to-end functionality** at all scales
+
+2. **Scalable Pipeline Architecture**
+   - Same codebase works for 100 games and 350k games
+   - Parameterized limits for different environments
+   - Robust error handling and retry logic
+   - Memory-efficient batch processing
+
+3. **Development Workflow**
+   ```bash
+   # Development (100 games)
+   python -m data_pipeline.main --limit 100
+
+   # Testing (10k games)
+   python -m data_pipeline.main --limit 10000
+
+   # Production (350k games)
+   python -m data_pipeline.main --limit 350000
+   ```
 
 ### Data Storage Strategy
 ```python
@@ -104,6 +132,13 @@ def smart_ingest(self, target_count=100):
 - **Portability**: Database file can be easily backed up and moved
 - **Development**: Perfect for single-developer projects
 
+### Why Middle Ground Approach?
+1. **Development Speed**: Working with 100 games allows rapid iteration
+2. **Production Readiness**: Same architecture scales to 350k games
+3. **Cost Efficiency**: Avoid unnecessary API calls and processing
+4. **Data Integrity**: Database constraints prevent duplicates
+5. **Flexibility**: Easy to test different scales (100 → 10k → 350k)
+
 ### Why Smart Ingestion?
 - **Avoid Re-fetching**: Check database count before fetching
 - **Rate Limit Compliance**: Respects IGDB's 4 req/s limit
@@ -119,6 +154,11 @@ def smart_ingest(self, target_count=100):
 ## Consequences
 
 ### Positive
+- ✅ Fast development iteration with small datasets (100 games)
+- ✅ Production-ready architecture from day one
+- ✅ No unnecessary re-fetching of data
+- ✅ Easy scaling from 100 to 350k games
+- ✅ Cost-effective development approach
 - ✅ Automatic deduplication via PRIMARY KEY constraints
 - ✅ Smart ingestion avoids unnecessary re-fetching
 - ✅ Reliable pipeline state management
@@ -128,11 +168,15 @@ def smart_ingest(self, target_count=100):
 - ✅ Perfect for single-server deployment
 
 ### Negative
+- ❌ Requires database setup (even if lightweight)
+- ❌ More complex than simple file storage
 - ❌ Limited concurrent write access (not needed for our use case)
 - ❌ No network access (not needed - same server as web app)
 - ❌ File-based (requires file system access)
 
 ### Risks
+- **Data Schema Evolution**: Changes to IGDB API might require schema updates
+- **Performance at Scale**: Need to monitor performance as dataset grows
 - **Concurrent Writes**: SQLite locks database during writes (mitigated by offline ingestion)
 - **File Corruption**: SQLite file corruption (mitigated by regular backups)
 - **Performance**: Large dataset queries (mitigated by proper indexing)
@@ -214,6 +258,11 @@ def migrate_to_postgresql():
 ```
 
 ## Success Metrics
+- **Development**: Complete pipeline with 100 games in < 1 hour
+- **Testing**: Scale to 10k games without code changes
+- **Production**: Handle 350k games with acceptable performance
+- **Data Integrity**: Zero duplicate games in database
+- **Cost**: Minimize unnecessary API calls and processing
 - **Deduplication**: 0% duplicate games in database
 - **Smart Ingestion**: <5% redundant API calls
 - **Pipeline Reliability**: >99% successful ingestion runs
