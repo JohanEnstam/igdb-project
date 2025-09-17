@@ -40,11 +40,12 @@ igdb-project/
 ## Teknisk Stack
 
 - **Cloud**: Google Cloud Platform (GCP)
-- **Data Pipeline**: Python, Apache Airflow/Cloud Composer
-- **ML**: scikit-learn, TensorFlow/PyTorch
-- **Web App**: TBD (React/Vue + FastAPI/Flask)
-- **Infrastructure**: Terraform/Pulumi
-- **CI/CD**: GitHub Actions
+- **Data Pipeline**: Python, SQLite, Cloud Storage
+- **ML**: scikit-learn, TF-IDF vectorization, content-based filtering
+- **Web App**: FastAPI (backend), React/Vue (frontend - coming next)
+- **Infrastructure**: Docker, GitHub Actions, Cloud Run
+- **CI/CD**: GitHub Actions (CI ✓, CD ✓, Test ✓)
+- **Security**: Bandit, Safety, pre-commit hooks
 
 ## Utvecklingsprocess
 
@@ -60,23 +61,33 @@ igdb-project/
 git clone <repository-url>
 cd igdb-project
 
-# Installera dependencies (kommer senare)
-# pip install -r requirements.txt
+# Installera dependencies
+python3 -m venv venv
+source venv/bin/activate
+pip install -e .
 
-# Kör lokalt (kommer senare)
-# python -m data_pipeline.ingestion.main
+# Kör lokalt
+python -m web_app.api.main
+# API:n körs på http://localhost:8000
+
+# Eller med Docker
+docker run --rm -p 8080:8080 -e PORT=8080 \
+  gcr.io/igdb-recommendation-system/igdb-api:latest
 ```
 
 ## Status
 
-✅ **Phase 2 Complete** - Data management and smart ingestion pipeline implemented
+✅ **Phase 4 Complete** - Complete ML Pipeline + Cloud Storage Integration + Fully Functional CI/CD
 
 ### **What's Working**
-- **DataManager**: SQLite database with automatic deduplication
-- **SmartIngestion**: Intelligent data fetching with re-fetching avoidance
-- **IGDB Integration**: Robust API client with rate limiting (4 req/s)
-- **Testing**: 24 comprehensive unit tests
-- **Code Quality**: Pre-commit hooks, type hints, documentation
+- **Complete ML Pipeline**: TF-IDF vectorization, content-based recommendations
+- **Cloud Storage Integration**: Professional data separation with GCS buckets
+- **Model Registry**: Runtime loading from Cloud Storage with graceful fallback
+- **FastAPI Web Application**: REST API with recommendation endpoints
+- **CI/CD Infrastructure**: All pipelines working (CI ✓, CD ✓, Test ✓)
+- **Docker Containerization**: All services containerized and tested
+- **Security**: Zero vulnerabilities (bandit + safety)
+- **Testing**: 66 comprehensive tests (100% pass rate)
 
 ### **Quick Start**
 ```bash
@@ -85,15 +96,35 @@ python3 -m venv venv
 source venv/bin/activate
 pip install -e .
 
-# Test smart ingestion (requires IGDB API credentials)
-python -m data_pipeline.ingestion.main --smart --limit 100
+# Train ML model with real data
+python -m data_pipeline.training.main --data data/games_clean.json --model models/recommendation_model.pkl
+
+# Start recommendation API locally
+python -m web_app.api.main
+
+# Test recommendations via API
+curl "http://localhost:8000/games/239060/recommendations?top_k=5"
+
+# Test Cloud Storage integration
+curl "http://localhost:8080/health"
+# Returns: {"status":"healthy","gcs_available":"True","data_accessible":"True"}
 
 # Run tests
 pytest tests/ -v
 ```
 
+### **Docker & CI/CD**
+```bash
+# Run API container locally (port 8080 for Cloud Run compatibility)
+docker run --rm -p 8080:8080 -e PORT=8080 \
+  gcr.io/igdb-recommendation-system/igdb-api:latest
+
+# Check CI/CD status (all pipelines working!)
+gh run list --limit 5
+```
+
 ### **Next Steps**
-🎯 **Phase 3**: End-to-end testing with real IGDB API, ML pipeline development
+🎯 **Phase 5**: Frontend Development - Build user interface for recommendations
 
 See `docs/CURRENT_STATUS.md` for detailed next steps and decision points.
 
