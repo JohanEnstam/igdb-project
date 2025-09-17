@@ -1,4 +1,4 @@
-# ML Training Service Dockerfile
+# Web App API Dockerfile
 FROM python:3.11-slim
 
 # Set environment variables
@@ -8,7 +8,6 @@ ENV PYTHONPATH=/app
 
 # Install system dependencies
 RUN apt-get update && apt-get install -y --no-install-recommends \
-    sqlite3 \
     curl \
     && rm -rf /var/lib/apt/lists/*
 
@@ -17,11 +16,14 @@ WORKDIR /app
 
 # Copy requirements first for better caching
 COPY requirements.txt /app/
-RUN pip install --no-cache-dir -r requirements.txt
+COPY web_app/requirements.txt /app/web_app/
+RUN pip install --no-cache-dir -r requirements.txt && \
+    pip install --no-cache-dir -r web_app/requirements.txt
 
-# Copy shared modules
-COPY data_pipeline/shared/ /app/data_pipeline/shared/
-COPY data_pipeline/training/ /app/data_pipeline/training/
+# Copy application code
+COPY data_pipeline/ /app/data_pipeline/
+COPY web_app/ /app/web_app/
+COPY shared/ /app/shared/
 
 # Create data and models directories
 RUN mkdir -p /app/data /app/models
@@ -31,6 +33,12 @@ RUN useradd --create-home --shell /bin/bash app && \
     chown -R app:app /app
 USER app
 
-# Default command for ML training
-ENTRYPOINT ["python", "-m", "data_pipeline.training.main"]
-CMD ["--help"]
+# Expose port
+EXPOSE 8000
+
+# Health check
+HEALTHCHECK --interval=30s --timeout=10s --start-period=5s --retries=3 \
+    CMD curl -f http://localhost:8000/health || exit 1
+
+# Default command
+CMD ["python", "-m", "web_app.api.main"]

@@ -70,7 +70,7 @@ jobs:
 
     strategy:
       matrix:
-        service: [ingestion, processing, training]
+        service: [ingestion, processing, training, api]
 
     steps:
       - name: Checkout code
@@ -107,7 +107,7 @@ jobs:
         uses: docker/build-push-action@v5
         with:
           context: .
-          file: data_pipeline/${{ matrix.service }}/Dockerfile
+          file: ${{ matrix.service == 'api' && 'web_app/Dockerfile' || format('data_pipeline/{0}/Dockerfile', matrix.service) }}
           push: true
           tags: ${{ steps.meta.outputs.tags }}
           labels: ${{ steps.meta.outputs.labels }}
@@ -116,7 +116,16 @@ jobs:
 
       - name: Test Docker image
         run: |
-          docker run --rm ${{ env.REGISTRY }}/${{ env.PROJECT_ID }}/igdb-${{ matrix.service }}:latest --help
+          if [ "${{ matrix.service }}" = "api" ]; then
+            # Test API container health endpoint
+            docker run --rm -d --name test-api -p 8000:8000 ${{ env.REGISTRY }}/${{ env.PROJECT_ID }}/igdb-${{ matrix.service }}:latest
+            sleep 10
+            curl -f http://localhost:8000/health || exit 1
+            docker stop test-api
+          else
+            # Test other containers with --help
+            docker run --rm ${{ env.REGISTRY }}/${{ env.PROJECT_ID }}/igdb-${{ matrix.service }}:latest --help
+          fi
 
   # Security scanning
   security:
