@@ -49,6 +49,19 @@ class ModelRegistry:
 
         if GCS_AVAILABLE:
             try:
+                # Handle credentials from environment variable (for CI)
+                credentials_json = os.environ.get("GOOGLE_APPLICATION_CREDENTIALS_JSON")
+                if credentials_json:
+                    import json
+                    import tempfile
+
+                    # Create temporary credentials file
+                    with tempfile.NamedTemporaryFile(
+                        mode="w", suffix=".json", delete=False
+                    ) as f:
+                        json.dump(json.loads(credentials_json), f)
+                        os.environ["GOOGLE_APPLICATION_CREDENTIALS"] = f.name
+
                 self.storage_client = storage.Client(project=self.project_id)
                 self.data_bucket = self.storage_client.bucket(data_bucket)
                 self.models_bucket = self.storage_client.bucket(models_bucket)
@@ -208,5 +221,8 @@ class ModelRegistry:
                 health["error"] = str(e)
                 health["data_accessible"] = False
                 health["models_accessible"] = False
+        else:
+            health["data_accessible"] = False
+            health["models_accessible"] = False
 
         return health

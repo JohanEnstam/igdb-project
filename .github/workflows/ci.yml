@@ -116,8 +116,11 @@ jobs:
       - name: Test Docker image
         run: |
           if [ "${{ matrix.service }}" = "api" ]; then
-            # Test API container health endpoint
-            docker run --rm -d --name test-api -p 8080:8080 -e PORT=8080 ${{ env.REGISTRY }}/${{ env.PROJECT_ID }}/igdb-${{ matrix.service }}:latest
+            # Test API container health endpoint with GCP credentials
+            docker run --rm -d --name test-api -p 8080:8080 \
+              -e PORT=8080 \
+              -e GOOGLE_APPLICATION_CREDENTIALS_JSON='${{ secrets.GCP_SA_KEY }}' \
+              ${{ env.REGISTRY }}/${{ env.PROJECT_ID }}/igdb-${{ matrix.service }}:latest
             sleep 10
             curl -f http://localhost:8080/health || exit 1
             docker stop test-api

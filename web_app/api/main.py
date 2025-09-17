@@ -192,14 +192,24 @@ async def health_check():
 
     # Add model registry health if available
     if model_registry:
-        registry_health = model_registry.health_check()
-        health_info["gcs_available"] = str(registry_health.get("gcs_available", False))
-        health_info["data_accessible"] = str(
-            registry_health.get("data_accessible", False)
-        )
-        health_info["models_accessible"] = str(
-            registry_health.get("models_accessible", False)
-        )
+        try:
+            registry_health = model_registry.health_check()
+            health_info["gcs_available"] = str(
+                registry_health.get("gcs_available", False)
+            )
+            health_info["data_accessible"] = str(
+                registry_health.get("data_accessible", False)
+            )
+            health_info["models_accessible"] = str(
+                registry_health.get("models_accessible", False)
+            )
+        except Exception as e:
+            # Graceful fallback for CI environment without GCP credentials
+            logger.warning(f"Health check failed (likely CI environment): {e}")
+            health_info["gcs_available"] = "False"
+            health_info["data_accessible"] = "False"
+            health_info["models_accessible"] = "False"
+            health_info["ci_mode"] = "True"
 
     return health_info
 
