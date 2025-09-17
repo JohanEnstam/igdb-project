@@ -48,42 +48,14 @@ jobs:
       - name: Configure Docker for GCR
         run: gcloud auth configure-docker
 
-      - name: Deploy Data Ingestion Service
-        run: |
-          gcloud run deploy igdb-ingestion-staging \
-            --image ${{ env.REGISTRY }}/${{ env.PROJECT_ID }}/igdb-ingestion:latest \
-            --platform managed \
-            --region ${{ env.REGION }} \
-            --set-secrets IGDB_CLIENT_ID=IGDB_CLIENT_ID:latest,IGDB_CLIENT_SECRET=IGDB_CLIENT_SECRET:latest \
-            --set-env-vars ENVIRONMENT=staging \
-            --allow-unauthenticated \
-            --memory 1Gi \
-            --cpu 1 \
-            --max-instances 10
+      - name: Skip Data Ingestion Service
+        run: echo "Skipping ingestion deployment - it's a batch job, not a web service"
 
-      - name: Deploy Data Processing Service
-        run: |
-          gcloud run deploy igdb-processing-staging \
-            --image ${{ env.REGISTRY }}/${{ env.PROJECT_ID }}/igdb-processing:latest \
-            --platform managed \
-            --region ${{ env.REGION }} \
-            --set-env-vars ENVIRONMENT=staging \
-            --allow-unauthenticated \
-            --memory 2Gi \
-            --cpu 2 \
-            --max-instances 5
+      - name: Skip Data Processing Service
+        run: echo "Skipping processing deployment - it's a batch job, not a web service"
 
-      - name: Deploy ML Training Service
-        run: |
-          gcloud run deploy igdb-training-staging \
-            --image ${{ env.REGISTRY }}/${{ env.PROJECT_ID }}/igdb-training:latest \
-            --platform managed \
-            --region ${{ env.REGION }} \
-            --set-env-vars ENVIRONMENT=staging \
-            --allow-unauthenticated \
-            --memory 4Gi \
-            --cpu 4 \
-            --max-instances 3
+      - name: Skip ML Training Service
+        run: echo "Skipping training deployment - it's a batch job, not a web service"
 
       - name: Deploy Web App API
         run: |
