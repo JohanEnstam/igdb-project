@@ -158,6 +158,46 @@ def process_game_data(raw_data: List[Dict[str, Any]]) -> pd.DataFrame:
 - Updating deployment strategies
 - Changing security or compliance requirements
 
+## Git Commit Standards
+
+### Commit Message Guidelines
+- **NEVER** combine multiple unrelated changes in a single commit
+- **ALWAYS** create separate commits for different types of changes
+- Use clear, descriptive commit messages following conventional commits format
+- Each commit should represent a single logical change
+
+### Commit Message Format
+```
+type(scope): brief description
+
+Detailed explanation of what changed and why.
+Include any breaking changes or important notes.
+
+Examples:
+- feat(data-pipeline): add IGDB API integration
+- docs(architecture): update data flow documentation
+- fix(ingestion): handle rate limiting errors
+- refactor(shared): extract common utilities
+```
+
+### Commit Segmentation Rules
+- **Documentation changes**: Separate commit for each document type
+- **Code changes**: Separate commit for each module/component
+- **Configuration changes**: Separate commit for each config file
+- **Dependencies**: Separate commit for dependency updates
+- **Infrastructure**: Separate commit for IaC changes
+
+### Examples of Good Commit Segmentation
+```bash
+# Good: Separate commits
+git commit -m "feat(data-pipeline): add IGDB API integration"
+git commit -m "docs(decisions): add ADR-007 middle ground approach"
+git commit -m "refactor(setup): add Python package structure"
+
+# Bad: Combined commit
+git commit -m "feat: add data pipeline, update docs, refactor setup"
+```
+
 ## Code Review Checklist
 - [ ] Documentation updated
 - [ ] Tests added/updated
@@ -167,6 +207,7 @@ def process_game_data(raw_data: List[Dict[str, Any]]) -> pd.DataFrame:
 - [ ] Security considerations addressed
 - [ ] Performance implications considered
 - [ ] ADR created if needed
+- [ ] Commits properly segmented by change type
 
 ## Emergency Procedures
 - Document incident response procedures
