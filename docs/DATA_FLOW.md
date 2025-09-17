@@ -5,15 +5,16 @@
 ### 1. Ingestion Phase
 
 ```text
-External API (IGDB) → Smart Ingestion → Database → Cloud Storage Backup
+External API (IGDB) → Smart Ingestion → Database → Cloud Storage
 ```
 
 - **Frequency**: Smart fetching (avoid re-fetching existing data)
 - **Data Format**: JSON responses from IGDB API
 - **Deduplication**: Database constraints prevent duplicate games
-- **Storage**: Primary in SQLite (dev) / PostgreSQL (prod), backup in Cloud Storage
+- **Storage**: Primary in SQLite (dev), production in Cloud Storage
 - **Rate Limiting**: 4 requests/second (IGDB API limit)
 - **Scaling**: Same code works for 100 games and 350k games
+- **Cloud Storage**: Data uploaded to `gs://igdb-recommendation-system-data`
 
 ### 2. Processing Phase
 
@@ -29,7 +30,7 @@ Database → Data Validation → Cleaning → Transformation → Training Data
 ### 3. Training Phase
 
 ```text
-Training Data → Feature Extraction → Model Training → Trained Model
+Training Data → Feature Extraction → Model Training → Trained Model → Cloud Storage
 ```
 
 - **Feature Extraction**:
@@ -40,21 +41,25 @@ Training Data → Feature Extraction → Model Training → Trained Model
 - **Output**: Serialized model (pickle) ready for serving (~23MB)
 - **Performance**: <0.5s training on 1230 games
 - **Scaling**: Same training pipeline for 100 games and 350k games
+- **Cloud Storage**: Models uploaded to `gs://igdb-recommendation-system-models`
 
 ### 4. Deployment Phase
 
 ```text
-Trained Model → Model Loading → FastAPI Serving → API Endpoints
+Cloud Storage → Model Registry → Runtime Loading → FastAPI Serving → API Endpoints
 ```
 
-- **Model Loading**: Load trained model from pickle file at startup
+- **Model Registry**: Cloud Storage integration with runtime loading
+- **Runtime Loading**: Load trained model from Cloud Storage at startup
+- **Graceful Fallback**: Local data backup if Cloud Storage unavailable
 - **API Serving**: FastAPI application with recommendation endpoints
 - **API Endpoints**:
   - `GET /games/{id}/recommendations` - Game-based recommendations
   - `POST /recommendations/text` - Text-based recommendations
   - `GET /games/search` - Game search functionality
+  - `GET /health` - Health check with GCS connectivity status
 - **Performance**: Real-time recommendations (<100ms response time)
-- **Monitoring**: Model health check endpoint
+- **Monitoring**: Model health check with Cloud Storage status
 
 ## Web Application Flow
 

@@ -34,6 +34,11 @@ Each ADR follows this structure:
 - [ADR-001: Project Structure](001-project-structure.md)
 - [ADR-002: Development Workflow](002-development-workflow.md)
 - [ADR-003: Documentation Strategy](003-documentation-strategy.md)
+- [ADR-004: ML Strategy](004-ml-strategy.md)
+- [ADR-005: Docker Strategy](005-docker-strategy.md)
+- [ADR-006: Data Management](006-data-management.md)
+- [ADR-007: ML Pipeline Implementation](007-ml-pipeline-implementation.md)
+- [ADR-008: Option B Lite Implementation](008-option-b-lite-implementation.md)
 
 ## Adding New ADRs
 

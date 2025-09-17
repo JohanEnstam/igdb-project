@@ -13,11 +13,18 @@
                        │   Data Storage  │    │  Trained Model │
                        │   (SQLite)      │    │   (Pickle)      │
                        └─────────────────┘    └─────────────────┘
+                                │                        │
+                                ▼                        ▼
+                       ┌─────────────────┐    ┌─────────────────┐
+                       │  Cloud Storage  │    │  Cloud Storage  │
+                       │   (Data Bucket) │    │  (Models Bucket)│
+                       └─────────────────┘    └─────────────────┘
                                                         │
                                                         ▼
                        ┌─────────────────┐    ┌─────────────────┐
                        │   Web App API   │◀───│   Web Frontend  │
                        │   (FastAPI)     │    │    (Future)     │
+                       │ Runtime Loading │    │                 │
                        └─────────────────┘    └─────────────────┘
                                 │
                                 ▼
@@ -45,7 +52,7 @@
 ### Data Flow
 
 ```text
-IGDB API → Raw Data → Cleaned Data → Feature Extraction → Trained Model → API Serving
+IGDB API → Raw Data → Cleaned Data → Feature Extraction → Trained Model → Cloud Storage → Runtime Loading → API Serving
 ```
 
 ### ML Pipeline Components
@@ -60,13 +67,14 @@ IGDB API → Raw Data → Cleaned Data → Feature Extraction → Trained Model 
 ### Web App Components
 
 1. **API**: FastAPI backend serving recommendations
-2. **Frontend**: User interface for search and recommendations (Future)
-3. **Deployment**: Application hosting and scaling (Future)
+2. **Model Registry**: Cloud Storage integration with runtime loading
+3. **Frontend**: User interface for search and recommendations (Future)
+4. **Deployment**: Application hosting and scaling (Future)
 
 ### Request Flow
 
 ```text
-User → API → ML Model → Recommendations → User
+User → API → Model Registry → Cloud Storage → ML Model → Recommendations → User
 ```
 
 ### API Endpoints
@@ -87,13 +95,21 @@ User → API → ML Model → Recommendations → User
 - **Linting**: Black formatting, Flake8, pre-commit hooks
 - **Container Builds**: All 4 services (ingestion, processing, training, api)
 - **Container Registry**: Push to Google Container Registry (GCR)
-- **Security**: Trivy vulnerability scanning (currently disabled)
+- **Health Checks**: API containers test with GCP credentials
+- **Security**: Bandit security scanning, safety vulnerability checks
 
 #### **CD Pipeline** (Continuous Deployment)
 - **Environment Management**: Staging/production environments
 - **GCP Authentication**: Service account with environment secrets
 - **Cloud Run Deployment**: Automated deployment to GCP
 - **Health Checks**: Container startup and endpoint validation
+
+#### **Test Pipeline** (Comprehensive Testing)
+- **Unit Tests**: All passing with 100% success rate
+- **Integration Tests**: Mock services and API testing
+- **Docker Tests**: All containers build and test successfully
+- **Security Tests**: Zero vulnerabilities (bandit + safety)
+- **Performance Tests**: Disabled until test directory created
 
 ### Container Architecture
 
@@ -113,24 +129,35 @@ User → API → ML Model → Recommendations → User
 ### Current Implementation
 
 - **SQLite**: Local data storage for development
+- **Cloud Storage**: Production data and model storage
 - **Pickle**: Model serialization and storage
 - **FastAPI**: Local API serving (port 8000) / Cloud Run (port 8080)
 - **Docker**: Containerization (fully configured)
-- **GitHub Actions**: CI/CD automation (working)
+- **GitHub Actions**: CI/CD automation (all pipelines working)
 - **Google Container Registry**: Image storage (working)
-- **Cloud Run**: Deployment target (configuration issues)
+- **Cloud Run**: Deployment target (working)
+
+### Cloud Storage Integration
+
+- **Data Bucket**: `gs://igdb-recommendation-system-data`
+- **Models Bucket**: `gs://igdb-recommendation-system-models`
+- **Runtime Loading**: API loads data/models from Cloud Storage at startup
+- **Graceful Fallback**: Local data backup if Cloud Storage unavailable
+- **Health Monitoring**: GCS connectivity and data accessibility checks
 
 ### Future GCP Services
 
-- **Cloud Storage**: Raw data storage
 - **BigQuery**: Processed data warehouse
 - **Cloud Functions**: Event-driven processing
 - **Cloud Composer**: Data pipeline orchestration
+- **Cloud Monitoring**: Application observability
 
 ### Deployment Status
 
 - **Docker**: ✅ Fully working
-- **GitHub Actions**: ✅ CI working, CD has Cloud Run issues
+- **GitHub Actions**: ✅ All pipelines working (CI ✓, CD ✓, Test ✓)
 - **Container Registry**: ✅ Working
-- **Cloud Run**: ❌ Deployment timeout issues
+- **Cloud Run**: ✅ Working
+- **Cloud Storage**: ✅ Working
+- **Security**: ✅ Zero vulnerabilities
 - **Terraform**: Future infrastructure as code
