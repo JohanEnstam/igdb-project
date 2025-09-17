@@ -10,7 +10,6 @@ Usage:
 """
 
 import logging
-import json
 import os
 import sys
 from pathlib import Path
@@ -27,6 +26,9 @@ sys.path.append(str(Path(__file__).parent.parent.parent))
 from data_pipeline.training.recommendation_model import (  # noqa: E402
     ContentBasedRecommendationModel,
 )
+
+# Import model registry for cloud storage integration
+from web_app.model_registry import ModelRegistry  # noqa: E402
 
 # Setup logging
 logging.basicConfig(
@@ -55,6 +57,7 @@ app.add_middleware(
 # Global model instance
 recommendation_model = None
 games_data = []
+model_registry = None
 
 
 # Pydantic models for API requests/responses
@@ -111,7 +114,7 @@ class ModelStatus(BaseModel):
 @app.on_event("startup")
 async def startup_event():
     """Initialize the application on startup."""
-    global recommendation_model, games_data
+    global recommendation_model, games_data, model_registry
 
     logger.info("=== API STARTUP DEBUG ===")
     logger.info(f"PORT environment variable: {os.environ.get('PORT', 'NOT SET')}")
@@ -125,28 +128,39 @@ async def startup_event():
     logger.info(
         f"Files in /app/models: {os.listdir('/app/models') if os.path.exists('/app/models') else 'NOT FOUND'}"
     )
-    logger.info("Starting up Game Recommendation API")
+    logger.info("Starting up Game Recommendation API with Cloud Storage integration")
 
     try:
-        # Load games data
-        games_file = Path("data/games_clean.json")
-        logger.info(f"Looking for games file at: {games_file.absolute()}")
-        if games_file.exists():
-            with open(games_file, "r") as f:
-                games_data = json.load(f)
-            logger.info(f"Loaded {len(games_data)} games from data file")
-        else:
-            logger.warning(f"Games data file not found at {games_file.absolute()}")
+        # Initialize model registry
+        model_registry = ModelRegistry()
+        health_status = model_registry.health_check()
+        logger.info(f"Model registry health: {health_status}")
 
-        # Load recommendation model
-        model_file = Path("models/recommendation_model.pkl")
-        logger.info(f"Looking for model file at: {model_file.absolute()}")
-        if model_file.exists():
-            recommendation_model = ContentBasedRecommendationModel()
-            recommendation_model.load_model(str(model_file))
-            logger.info("Loaded recommendation model successfully")
+        # Load games data from Cloud Storage or local fallback
+        logger.info("Loading games data...")
+        games_data = model_registry.get_games_data()
+        if games_data:
+            logger.info(f"Loaded {len(games_data)} games successfully")
         else:
-            logger.warning(f"Recommendation model not found at {model_file.absolute()}")
+            logger.warning("Failed to load games data")
+
+        # Load recommendation model from Cloud Storage or local fallback
+        logger.info("Loading recommendation model...")
+        model_path = model_registry.get_model_path("recommendation_model.pkl")
+        if model_path:
+            recommendation_model = ContentBasedRecommendationModel()
+            recommendation_model.load_model(model_path)
+            logger.info("Loaded recommendation model successfully")
+
+            # Clean up temporary file if it was downloaded
+            if model_path.startswith("/tmp"):
+                try:
+                    os.unlink(model_path)
+                    logger.info("Cleaned up temporary model file")
+                except Exception as e:
+                    logger.warning(f"Failed to clean up temp file: {e}")
+        else:
+            logger.warning("Failed to load recommendation model")
 
     except Exception as e:
         logger.error(f"Failed to initialize application: {str(e)}")
@@ -169,12 +183,25 @@ async def root():
 @app.get("/health", response_model=Dict[str, str])
 async def health_check():
     """Health check endpoint."""
-    return {
+    health_info = {
         "status": "healthy",
         "model_loaded": str(recommendation_model is not None),
         "games_count": str(len(games_data)),
         "port": str(os.environ.get("PORT", "8080")),
     }
+
+    # Add model registry health if available
+    if model_registry:
+        registry_health = model_registry.health_check()
+        health_info["gcs_available"] = str(registry_health.get("gcs_available", False))
+        health_info["data_accessible"] = str(
+            registry_health.get("data_accessible", False)
+        )
+        health_info["models_accessible"] = str(
+            registry_health.get("models_accessible", False)
+        )
+
+    return health_info
 
 
 @app.get("/model/status", response_model=ModelStatus)
