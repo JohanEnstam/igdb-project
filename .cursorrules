@@ -1,0 +1,177 @@
+# IGDB Game Recommendation System - Cursor Rules
+
+## Project Overview
+This is a complete pipeline for collecting game data from external APIs, training ML models, and serving game recommendations via web application. The project is divided into two main pipelines: data-pipeline (factory) and web-app (store).
+
+## Documentation Requirements
+
+### Always Update Documentation
+- When creating new features, ALWAYS update relevant documentation
+- Update `docs/CONTEXT.md` if project scope changes
+- Update `docs/ARCHITECTURE.md` if system architecture changes
+- Update `docs/DATA_FLOW.md` if data flow changes
+- Create new ADR in `docs/decisions/` for significant architectural decisions
+
+### Documentation Standards
+- Use clear, concise language
+- Include code examples in docstrings
+- Add type hints to all Python functions
+- Write README.md in each directory explaining its purpose
+- Keep documentation focused on decisions and context, not implementation details
+
+## File Structure & Naming
+
+### Directory Structure
+```
+igdb-project/
+├── data-pipeline/          # Factory pipeline
+│   ├── ingestion/         # API data collection
+│   ├── processing/        # Data cleaning & transformation
+│   ├── training/          # ML model training
+│   └── deployment/        # Model serving setup
+├── web-app/               # Store pipeline
+│   ├── api/              # Backend API
+│   ├── frontend/         # User interface
+│   └── deployment/       # App deployment
+├── shared/               # Shared code (utils, configs)
+├── infrastructure/       # Terraform/Pulumi for GCP
+└── docs/                # Documentation
+```
+
+### Naming Conventions
+- **Files**: Use kebab-case (e.g., `data-ingestion.py`, `model-training.py`)
+- **Directories**: Use kebab-case (e.g., `data-pipeline`, `web-app`)
+- **Python modules**: Use snake_case (e.g., `data_ingestion.py`, `model_training.py`)
+- **Classes**: Use PascalCase (e.g., `DataIngestion`, `ModelTraining`)
+- **Functions**: Use snake_case (e.g., `process_data`, `train_model`)
+- **Constants**: Use UPPER_SNAKE_CASE (e.g., `API_BASE_URL`, `MAX_RETRIES`)
+
+## Code Standards
+
+### Python Code
+- Always use type hints
+- Write docstrings for all functions and classes
+- Use f-strings for string formatting
+- Follow PEP 8 style guidelines
+- Use meaningful variable names
+- Add error handling and logging
+
+### Example Function Documentation
+```python
+def process_game_data(raw_data: List[Dict[str, Any]]) -> pd.DataFrame:
+    """
+    Process raw game data from IGDB API into clean DataFrame.
+    
+    Args:
+        raw_data: List of raw game data dictionaries from IGDB API
+        
+    Returns:
+        Cleaned DataFrame with standardized columns
+        
+    Raises:
+        ValueError: If raw_data is empty or malformed
+        
+    Example:
+        >>> raw_data = [{"id": 1, "name": "Test Game"}]
+        >>> df = process_game_data(raw_data)
+        >>> print(df.columns)
+        Index(['game_id', 'game_name', 'processed_at'], dtype='object')
+    """
+```
+
+## Infrastructure as Code
+
+### Terraform Standards
+- Use modules for reusable components
+- Separate environments (staging, production)
+- Use variables for environment-specific values
+- Include resource tags for cost tracking
+- Document all resources in comments
+
+### Docker Standards
+- Use multi-stage builds for production images
+- Pin specific versions in requirements.txt
+- Use .dockerignore to exclude unnecessary files
+- Include health checks in containers
+
+## CI/CD Requirements
+
+### GitHub Actions
+- Separate workflows for data-pipeline and web-app
+- Run tests on all pull requests
+- Deploy to staging on merge to main
+- Deploy to production on release tags
+- Include security scanning and dependency updates
+
+### Testing Requirements
+- Unit tests for all Python functions
+- Integration tests for API endpoints
+- Data quality tests for pipeline
+- End-to-end tests for web application
+
+## Development Workflow
+
+### Local Development
+- Use Docker Compose for local development
+- Include mock data for development
+- Support hot reloading for frontend/backend
+- Include local testing scripts
+
+### Branch Strategy
+- Use feature branches for new development
+- Create pull requests for code review
+- Merge to main only after tests pass
+- Use semantic versioning for releases
+
+## Security & Best Practices
+
+### Secrets Management
+- Never commit secrets to git
+- Use environment variables for configuration
+- Use GCP Secret Manager for production secrets
+- Rotate secrets regularly
+
+### Data Handling
+- Validate all input data
+- Sanitize data before processing
+- Use parameterized queries for databases
+- Log data access and modifications
+
+## Monitoring & Observability
+
+### Logging
+- Use structured logging (JSON format)
+- Include correlation IDs for request tracing
+- Log at appropriate levels (DEBUG, INFO, WARN, ERROR)
+- Include context in log messages
+
+### Metrics
+- Track key business metrics
+- Monitor system performance
+- Set up alerts for critical issues
+- Use GCP Monitoring for cloud resources
+
+## When to Create New ADRs
+- Choosing new technologies or frameworks
+- Changing system architecture
+- Modifying data flow or storage
+- Updating deployment strategies
+- Changing security or compliance requirements
+
+## Code Review Checklist
+- [ ] Documentation updated
+- [ ] Tests added/updated
+- [ ] Type hints included
+- [ ] Error handling implemented
+- [ ] Logging added
+- [ ] Security considerations addressed
+- [ ] Performance implications considered
+- [ ] ADR created if needed
+
+## Emergency Procedures
+- Document incident response procedures
+- Maintain runbooks for common issues
+- Set up monitoring alerts
+- Plan for disaster recovery
+
+Remember: This project prioritizes maintainability, documentation, and clear architecture over speed of development. Always think about the long-term maintainability of your code.
