@@ -25,8 +25,9 @@ COPY data_pipeline/ /app/data_pipeline/
 COPY web_app/ /app/web_app/
 COPY shared/ /app/shared/
 
-# Create data and models directories
-RUN mkdir -p /app/data /app/models
+# Copy data and models
+COPY data/ /app/data/
+COPY models/ /app/models/
 
 # Create non-root user for security
 RUN useradd --create-home --shell /bin/bash app && \

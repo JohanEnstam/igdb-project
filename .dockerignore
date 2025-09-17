@@ -1,0 +1,86 @@
+# Docker ignore file for IGDB Game Recommendation System
+
+# Python
+__pycache__/
+*.py[cod]
+*$py.class
+*.so
+.Python
+build/
+develop-eggs/
+dist/
+downloads/
+eggs/
+.eggs/
+lib/
+lib64/
+parts/
+sdist/
+var/
+wheels/
+*.egg-info/
+.installed.cfg
+*.egg
+
+# Virtual environments
+venv/
+env/
+ENV/
+env.bak/
+venv.bak/
+
+# IDE
+.vscode/
+.idea/
+*.swp
+*.swo
+*~
+
+# OS
+.DS_Store
+.DS_Store?
+._*
+.Spotlight-V100
+.Trashes
+ehthumbs.db
+Thumbs.db
+
+# Git
+.git/
+.gitignore
+
+# Documentation
+docs/
+*.md
+README.md
+
+# Tests
+tests/
+.pytest_cache/
+.coverage
+htmlcov/
+
+# Development tools
+.pre-commit-config.yaml
+.cursorrules
+pytest.ini
+
+# Data files (will be mounted as volumes)
+data/
+*.db
+*.json
+
+# But allow specific files needed for production
+!data/games_clean.json
+!models/recommendation_model.pkl
+
+# Infrastructure
+infrastructure/
+
+# Logs
+*.log
+logs/
+
+# Temporary files
+tmp/
+temp/
