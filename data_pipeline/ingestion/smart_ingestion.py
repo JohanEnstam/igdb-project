@@ -341,8 +341,8 @@ class SmartIngestion:
         Returns:
             Efficiency percentage
         """
-        total_fetched = stats.get("total_fetched", 0)
-        total_new = stats.get("total_new", 0)
+        total_fetched = stats.get("total_fetched", 0) or 0
+        total_new = stats.get("total_new", 0) or 0
 
         if total_fetched == 0:
             return 100.0
