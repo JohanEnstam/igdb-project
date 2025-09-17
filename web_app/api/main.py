@@ -113,29 +113,46 @@ async def startup_event():
     """Initialize the application on startup."""
     global recommendation_model, games_data
 
+    logger.info("=== API STARTUP DEBUG ===")
+    logger.info(f"PORT environment variable: {os.environ.get('PORT', 'NOT SET')}")
+    logger.info(f"Current working directory: {os.getcwd()}")
+    logger.info(
+        f"Files in /app: {os.listdir('/app') if os.path.exists('/app') else 'NOT FOUND'}"
+    )
+    logger.info(
+        f"Files in /app/data: {os.listdir('/app/data') if os.path.exists('/app/data') else 'NOT FOUND'}"
+    )
+    logger.info(
+        f"Files in /app/models: {os.listdir('/app/models') if os.path.exists('/app/models') else 'NOT FOUND'}"
+    )
     logger.info("Starting up Game Recommendation API")
 
     try:
         # Load games data
         games_file = Path("data/games_clean.json")
+        logger.info(f"Looking for games file at: {games_file.absolute()}")
         if games_file.exists():
             with open(games_file, "r") as f:
                 games_data = json.load(f)
             logger.info(f"Loaded {len(games_data)} games from data file")
         else:
-            logger.warning("Games data file not found")
+            logger.warning(f"Games data file not found at {games_file.absolute()}")
 
         # Load recommendation model
         model_file = Path("models/recommendation_model.pkl")
+        logger.info(f"Looking for model file at: {model_file.absolute()}")
         if model_file.exists():
             recommendation_model = ContentBasedRecommendationModel()
             recommendation_model.load_model(str(model_file))
             logger.info("Loaded recommendation model successfully")
         else:
-            logger.warning("Recommendation model not found")
+            logger.warning(f"Recommendation model not found at {model_file.absolute()}")
 
     except Exception as e:
         logger.error(f"Failed to initialize application: {str(e)}")
+        import traceback
+
+        logger.error(f"Traceback: {traceback.format_exc()}")
 
 
 @app.get("/", response_model=Dict[str, str])
@@ -152,7 +169,12 @@ async def root():
 @app.get("/health", response_model=Dict[str, str])
 async def health_check():
     """Health check endpoint."""
-    return {"status": "healthy", "model_loaded": str(recommendation_model is not None)}
+    return {
+        "status": "healthy",
+        "model_loaded": str(recommendation_model is not None),
+        "games_count": str(len(games_data)),
+        "port": str(os.environ.get("PORT", "8080")),
+    }
 
 
 @app.get("/model/status", response_model=ModelStatus)
@@ -362,7 +384,7 @@ async def list_platforms():
 
 
 if __name__ == "__main__":
-    port = int(os.environ.get("PORT", 8000))
+    port = int(os.environ.get("PORT", 8080))  # Default to 8080 for Cloud Run
     uvicorn.run(
         "web_app.api.main:app",
         host="0.0.0.0",
