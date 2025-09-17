@@ -107,6 +107,7 @@ jobs:
           context: .
           file: data_pipeline/${{ matrix.service }}/Dockerfile
           push: false
+          load: true
           tags: igdb-${{ matrix.service }}:test
           cache-from: type=gha
           cache-to: type=gha,mode=max
@@ -181,7 +182,7 @@ jobs:
           bandit -r data_pipeline/ -f json -o bandit-report.json --skip B301,B403
 
           # Safety check for known vulnerabilities
-          safety check --json --output json > safety-report.json
+          safety check --json > safety-report.json
 
       - name: Upload security reports
         uses: actions/upload-artifact@v4
