@@ -1,0 +1,22 @@
+# Production dependencies for IGDB Game Recommendation System
+
+# Core dependencies
+requests>=2.31.0
+python-dotenv>=1.0.0
+pandas>=2.1.0
+numpy>=1.24.0
+scikit-learn>=1.3.0
+
+# Web framework (for API services)
+fastapi>=0.104.0
+uvicorn>=0.24.0
+pydantic>=2.5.0
+
+# Database
+# sqlite3 is built into Python standard library
+
+# Logging and monitoring
+structlog>=23.2.0
+
+# HTTP client
+httpx>=0.25.0

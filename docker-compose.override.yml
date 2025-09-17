@@ -1,0 +1,42 @@
+# Docker Compose override for development
+# This file is automatically loaded by docker-compose
+
+version: '3.8'
+
+services:
+  # Development overrides for data-ingestion
+  data-ingestion:
+    environment:
+      - DEBUG=true
+      - LOG_LEVEL=DEBUG
+      - HOT_RELOAD=true
+    volumes:
+      - ./data:/app/data
+      - ./logs:/app/logs
+      # Mount source code for development
+      - ./data_pipeline:/app/data_pipeline
+    command: ["--smart", "--limit", "50"]
+
+  # Development overrides for data-processing
+  data-processing:
+    environment:
+      - DEBUG=true
+      - LOG_LEVEL=DEBUG
+    volumes:
+      - ./data:/app/data
+      - ./logs:/app/logs
+      # Mount source code for development
+      - ./data_pipeline:/app/data_pipeline
+    command: ["--batch-size", "50"]
+
+  # Development overrides for ml-training
+  ml-training:
+    environment:
+      - DEBUG=true
+      - LOG_LEVEL=DEBUG
+    volumes:
+      - ./data:/app/data
+      - ./logs:/app/logs
+      # Mount source code for development
+      - ./data_pipeline:/app/data_pipeline
+    command: ["--model-type", "collaborative_filtering", "--epochs", "10"]

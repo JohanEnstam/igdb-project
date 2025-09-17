@@ -1,0 +1,91 @@
+# Docker Compose for IGDB Game Recommendation System
+# Local development environment with microservices architecture
+
+version: '3.8'
+
+services:
+  # Data Ingestion Service
+  data-ingestion:
+    build:
+      context: .
+      dockerfile: data_pipeline/ingestion/Dockerfile
+    container_name: igdb-ingestion
+    environment:
+      - IGDB_CLIENT_ID=${IGDB_CLIENT_ID}
+      - IGDB_CLIENT_SECRET=${IGDB_CLIENT_SECRET}
+      - DATABASE_URL=sqlite:///app/data/games.db
+      - PYTHONPATH=/app
+    volumes:
+      - ./data:/app/data
+      - ./logs:/app/logs
+    networks:
+      - igdb-network
+    restart: unless-stopped
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:8000/health"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 40s
+
+  # Data Processing Service
+  data-processing:
+    build:
+      context: .
+      dockerfile: data_pipeline/processing/Dockerfile
+    container_name: igdb-processing
+    environment:
+      - DATABASE_URL=sqlite:///app/data/games.db
+      - PYTHONPATH=/app
+    volumes:
+      - ./data:/app/data
+      - ./logs:/app/logs
+    depends_on:
+      data-ingestion:
+        condition: service_healthy
+    networks:
+      - igdb-network
+    restart: unless-stopped
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:8000/health"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 40s
+
+  # ML Training Service
+  ml-training:
+    build:
+      context: .
+      dockerfile: data_pipeline/training/Dockerfile
+    container_name: igdb-training
+    environment:
+      - DATABASE_URL=sqlite:///app/data/games.db
+      - MODEL_STORAGE_PATH=/app/data/models
+      - PYTHONPATH=/app
+    volumes:
+      - ./data:/app/data
+      - ./logs:/app/logs
+    depends_on:
+      data-processing:
+        condition: service_healthy
+    networks:
+      - igdb-network
+    restart: unless-stopped
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:8000/health"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 40s
+
+networks:
+  igdb-network:
+    driver: bridge
+    name: igdb-network
+
+volumes:
+  data:
+    driver: local
+  logs:
+    driver: local
