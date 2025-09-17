@@ -1,7 +1,7 @@
 """
 IGDB Data Pipeline Package
 
-This package contains the complete data pipeline for the IGDB Game 
+This package contains the complete data pipeline for the IGDB Game
 Recommendation System:
 - ingestion: Data collection from IGDB API
 - processing: Data cleaning and transformation
