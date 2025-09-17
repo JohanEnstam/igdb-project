@@ -39,6 +39,7 @@ Each ADR follows this structure:
 - [ADR-006: Data Management](006-data-management.md)
 - [ADR-007: ML Pipeline Implementation](007-ml-pipeline-implementation.md)
 - [ADR-008: Option B Lite Implementation](008-option-b-lite-implementation.md)
+- [ADR-009: Frontend Scalability Strategy](009-frontend-scalability-strategy.md)
 
 ## Adding New ADRs
 

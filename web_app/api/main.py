@@ -147,20 +147,47 @@ async def startup_event():
         # Load recommendation model from Cloud Storage or local fallback
         logger.info("Loading recommendation model...")
         model_path = model_registry.get_model_path("recommendation_model.pkl")
-        if model_path:
+        feature_extractor_path = model_registry.get_model_path(
+            "recommendation_model_feature_extractor.pkl"
+        )
+
+        if model_path and feature_extractor_path:
+            # Copy feature extractor to expected location for load_model
+            expected_feature_extractor_path = model_path.replace(
+                ".pkl", "_feature_extractor.pkl"
+            )
+            try:
+                import shutil
+
+                shutil.copy2(feature_extractor_path, expected_feature_extractor_path)
+                logger.info(
+                    f"Copied feature extractor to {expected_feature_extractor_path}"
+                )
+            except Exception as e:
+                logger.error(f"Failed to copy feature extractor: {e}")
+                return
+
             recommendation_model = ContentBasedRecommendationModel()
             recommendation_model.load_model(model_path)
             logger.info("Loaded recommendation model successfully")
 
-            # Clean up temporary file if it was downloaded
-            if model_path.startswith("/tmp"):
-                try:
-                    os.unlink(model_path)
-                    logger.info("Cleaned up temporary model file")
-                except Exception as e:
-                    logger.warning(f"Failed to clean up temp file: {e}")
+            # Clean up temporary files if they were downloaded
+            temp_files = [
+                model_path,
+                feature_extractor_path,
+                expected_feature_extractor_path,
+            ]
+            for temp_path in temp_files:
+                if temp_path and temp_path.startswith("/tmp"):
+                    try:
+                        os.unlink(temp_path)
+                        logger.info(f"Cleaned up temporary model file: {temp_path}")
+                    except Exception as e:
+                        logger.warning(f"Failed to clean up temp file {temp_path}: {e}")
         else:
-            logger.warning("Failed to load recommendation model")
+            logger.warning(
+                f"Failed to load recommendation model. Model: {model_path}, Feature Extractor: {feature_extractor_path}"
+            )
 
     except Exception as e:
         logger.error(f"Failed to initialize application: {str(e)}")
