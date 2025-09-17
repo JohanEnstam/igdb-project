@@ -17,7 +17,7 @@ Key Features:
 import logging
 import time
 import uuid
-from typing import List, Dict, Any, Optional
+from typing import List, Dict, Any, Optional, Tuple
 from datetime import datetime
 
 from data_pipeline.shared.data_manager import DataManager
@@ -350,18 +350,168 @@ class SmartIngestion:
         efficiency = (total_new / total_fetched) * 100
         return round(efficiency, 2)
 
+    def fetch_representative_dataset(self, target_count: int = 2000) -> int:
+        """
+        Fetch a representative dataset using stratified sampling across genres,
+        rating ranges, and platforms for better ML training.
+
+        Args:
+            target_count: Total number of games to fetch
+
+        Returns:
+            Final count of games in database
+
+        Example:
+            >>> count = si.fetch_representative_dataset(2000)
+            >>> print(f"Representative dataset: {count} games")
+        """
+        try:
+            current_count = self.data_manager.count_games()
+
+            if current_count >= target_count:
+                logger.info(f"✅ Already have {current_count} games, no need to fetch")
+                return current_count
+
+            needed = target_count - current_count
+            logger.info(f"📥 Fetching {needed} games using representative sampling...")
+
+            # Define stratified sampling strategies
+            strategies = self._get_representative_strategies(needed)
+
+            total_fetched = 0
+            batch_id = f"representative_{datetime.now().strftime('%Y%m%d_%H%M%S')}_{uuid.uuid4().hex[:8]}"
+
+            # Log start
+            self.data_manager.log_ingestion(
+                batch_id=batch_id,
+                games_fetched=0,
+                games_new=0,
+                games_updated=0,
+                status="started",
+            )
+
+            # Execute each strategy
+            for strategy_name, query, count in strategies:
+                logger.info(f"🎯 Executing strategy: {strategy_name} ({count} games)")
+
+                games = self.igdb_client._make_request("games", query)
+
+                if games:
+                    saved_count = self.data_manager.save_games(games)
+                    total_fetched += saved_count
+                    logger.info(f"✅ {strategy_name}: Saved {saved_count} games")
+                else:
+                    logger.warning(f"⚠️ {strategy_name}: No games fetched")
+
+            # Log completion
+            self.data_manager.log_ingestion(
+                batch_id=batch_id,
+                games_fetched=total_fetched,
+                games_new=total_fetched,
+                games_updated=0,
+                status="completed",
+            )
+
+            final_count = self.data_manager.count_games()
+            logger.info(
+                f"✅ Representative dataset complete! Database now has {final_count} games"
+            )
+
+            return final_count
+
+        except Exception as e:
+            logger.error(f"Error in representative dataset fetch: {e}")
+            self.data_manager.log_ingestion(
+                batch_id=batch_id if "batch_id" in locals() else "unknown",
+                games_fetched=0,
+                games_new=0,
+                games_updated=0,
+                status="error",
+                error_message=str(e),
+            )
+            raise
+
+    def _get_representative_strategies(
+        self, total_needed: int
+    ) -> List[Tuple[str, str, int]]:
+        """
+        Generate stratified sampling strategies for representative dataset.
+
+        Args:
+            total_needed: Total number of games needed
+
+        Returns:
+            List of (strategy_name, query, count) tuples
+        """
+        # Calculate counts for each strategy (proportional distribution)
+        high_rated_count = int(total_needed * 0.25)  # 25% high-rated games
+        genre_diverse_count = int(total_needed * 0.35)  # 35% genre-diverse games
+        platform_diverse_count = int(total_needed * 0.25)  # 25% platform-diverse games
+        recent_count = int(total_needed * 0.15)  # 15% recent games
+
+        strategies = [
+            # 1. High-rated games (top 25%)
+            (
+                "high_rated",
+                f"""
+                fields id,name,summary,genres,platforms,themes,rating,rating_count,first_release_date;
+                where rating >= 80 & summary != null & genres != null;
+                limit {high_rated_count};
+                sort rating desc;
+                """,
+                high_rated_count,
+            ),
+            # 2. Genre-diverse games (35%)
+            (
+                "genre_diverse",
+                f"""
+                fields id,name,summary,genres,platforms,themes,rating,rating_count,first_release_date;
+                where rating >= 60 & rating < 85 & summary != null & genres != null;
+                limit {genre_diverse_count};
+                sort rating desc;
+                """,
+                genre_diverse_count,
+            ),
+            # 3. Platform-diverse games (25%)
+            (
+                "platform_diverse",
+                f"""
+                fields id,name,summary,genres,platforms,themes,rating,rating_count,first_release_date;
+                where rating >= 50 & rating < 80 & summary != null & platforms != null;
+                limit {platform_diverse_count};
+                sort rating desc;
+                """,
+                platform_diverse_count,
+            ),
+            # 4. Recent games (15%)
+            (
+                "recent_games",
+                f"""
+                fields id,name,summary,genres,platforms,themes,rating,rating_count,first_release_date;
+                where first_release_date >= 1609459200 & summary != null;
+                limit {recent_count};
+                sort first_release_date desc;
+                """,
+                recent_count,
+            ),
+        ]
+
+        return strategies
+
     def smart_ingest(self, target_count: int = 100, strategy: str = "balanced") -> int:
         """
         Smart ingestion with strategy support.
 
         Args:
             target_count: Target number of games in database
-            strategy: Fetching strategy (balanced, high_rated, recent)
+            strategy: Fetching strategy (balanced, high_rated, recent, representative)
 
         Returns:
             Final count of games in database
         """
-        if strategy == "balanced":
+        if strategy == "representative":
+            return self.fetch_representative_dataset(target_count)
+        elif strategy == "balanced":
             return self.fetch_if_needed(target_count)
         else:
             return self.fetch_with_strategy(strategy, target_count)

@@ -412,7 +412,7 @@ def main():
 
             # Fetch games using smart ingestion
             target_count = args.limit or 100
-            count = si.fetch_if_needed(target_count)
+            count = si.smart_ingest(target_count, strategy="representative")
 
             print(f"✅ Smart ingestion complete! Database now has {count} games")
 

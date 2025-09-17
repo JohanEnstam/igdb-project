@@ -1,17 +1,22 @@
 #!/usr/bin/env python3
 """
-Data Processing Service
+Data Processing Pipeline - ETL for IGDB game data
 
-This service handles data cleaning, transformation, and preparation
-for the ML training pipeline.
+This script transforms raw IGDB data into clean, ML-ready format.
+It handles the Extract-Transform-Load pipeline for the recommendation system.
 
 Usage:
-    python -m data_pipeline.processing.main
+    python -m data_pipeline.processing.main --transform-all
+    python -m data_pipeline.processing.main --quality-report
 """
 
 import argparse
 import logging
 from typing import List, Dict, Any
+from pathlib import Path
+
+from data_pipeline.shared.data_manager import DataManager
+from data_pipeline.processing.data_transformer import DataTransformer
 
 # Setup logging
 logging.basicConfig(
@@ -20,61 +25,141 @@ logging.basicConfig(
 logger = logging.getLogger(__name__)
 
 
-class DataProcessingService:
-    """Handles data processing and transformation."""
+def transform_all_games(db_path: str = "data/games.db") -> None:
+    """
+    Transform all games in database to clean format.
 
-    def __init__(self):
-        """Initialize the data processing service."""
-        logger.info("Initializing Data Processing Service")
+    Args:
+        db_path: Path to SQLite database
+    """
+    logger.info("🚀 Starting ETL transformation of all games...")
 
-    def process_games(self, games: List[Dict[str, Any]]) -> List[Dict[str, Any]]:
-        """
-        Process and clean game data.
+    with DataManager(db_path) as dm:
+        # Get all raw games
+        raw_games = dm.get_games()
+        logger.info(f"📥 Found {len(raw_games)} raw games to transform")
 
-        Args:
-            games: List of raw game data
+        if not raw_games:
+            logger.warning("No games found in database")
+            return
 
-        Returns:
-            List of processed game data
-        """
-        logger.info(f"Processing {len(games)} games")
+        # Transform games
+        transformer = DataTransformer()
+        clean_games = transformer.transform_batch(raw_games)
 
-        # TODO: Implement actual data processing logic
-        # For now, just return the games as-is
-        processed_games = []
-        for game in games:
-            # Basic processing - remove None values
-            processed_game = {k: v for k, v in game.items() if v is not None}
-            processed_games.append(processed_game)
+        # Generate quality report
+        report = transformer.get_data_quality_report(clean_games)
 
-        logger.info(f"Processed {len(processed_games)} games")
-        return processed_games
+        logger.info("📊 Data Quality Report:")
+        logger.info(f"   - Total games: {report['total_games']}")
+        logger.info(f"   - Quality score: {report['quality_score']}/100")
+        logger.info(f"   - Games with summaries: {report['has_summary']}")
+        logger.info(f"   - Games with ratings: {report['has_rating']}")
+        logger.info(f"   - Games with genres: {report['has_genres']}")
+        logger.info(f"   - Games with platforms: {report['has_platforms']}")
+        logger.info(f"   - Average rating: {report['avg_rating']}")
+        logger.info(f"   - Average genres per game: {report['avg_genres_per_game']}")
+        logger.info(
+            f"   - Average platforms per game: {report['avg_platforms_per_game']}"
+        )
 
-    def run(self):
-        """Run the data processing service."""
-        logger.info("Starting Data Processing Service")
+        # Save transformed data
+        save_transformed_data(clean_games)
 
-        # TODO: Implement actual processing logic
-        # This is a placeholder for now
-        logger.info("Data Processing Service completed")
+        logger.info("✅ ETL transformation complete!")
+
+
+def save_transformed_data(clean_games: List[Dict[str, Any]]) -> None:
+    """
+    Save transformed data to files.
+
+    Args:
+        clean_games: List of cleaned game data
+    """
+    import json
+    import pandas as pd
+
+    # Ensure data directory exists
+    Path("data").mkdir(exist_ok=True)
+
+    # Save as JSON
+    json_path = "data/games_clean.json"
+    with open(json_path, "w", encoding="utf-8") as f:
+        json.dump(clean_games, f, indent=2, ensure_ascii=False, default=str)
+
+    logger.info(f"💾 Saved {len(clean_games)} clean games to {json_path}")
+
+    # Save as CSV for easy analysis
+    csv_path = "data/games_clean.csv"
+    df = pd.DataFrame(clean_games)
+    df.to_csv(csv_path, index=False)
+
+    logger.info(f"💾 Saved {len(clean_games)} clean games to {csv_path}")
+
+
+def generate_quality_report(db_path: str = "data/games.db") -> None:
+    """
+    Generate quality report for current data.
+
+    Args:
+        db_path: Path to SQLite database
+    """
+    logger.info("📊 Generating data quality report...")
+
+    with DataManager(db_path) as dm:
+        raw_games = dm.get_games()
+
+        if not raw_games:
+            logger.warning("No games found in database")
+            return
+
+        transformer = DataTransformer()
+        clean_games = transformer.transform_batch(raw_games)
+        report = transformer.get_data_quality_report(clean_games)
+
+        print("\n" + "=" * 50)
+        print("📊 DATA QUALITY REPORT")
+        print("=" * 50)
+        print(f"Total games: {report['total_games']}")
+        print(f"Quality score: {report['quality_score']}/100")
+        print()
+        print("Data completeness:")
+        print(f"  📝 Summaries: {report['has_summary']}")
+        print(f"  ⭐ Ratings: {report['has_rating']}")
+        print(f"  🎭 Genres: {report['has_genres']}")
+        print(f"  🖥️ Platforms: {report['has_platforms']}")
+        print()
+        print("Statistics:")
+        print(f"  Average rating: {report['avg_rating']}")
+        print(f"  Average genres per game: {report['avg_genres_per_game']}")
+        print(f"  Average platforms per game: {report['avg_platforms_per_game']}")
+        print("=" * 50)
 
 
 def main():
-    """Main function to run data processing."""
-    parser = argparse.ArgumentParser(description="Data Processing Service")
+    """Main function to run data processing pipeline."""
+    parser = argparse.ArgumentParser(description="IGDB Data Processing Pipeline")
     parser.add_argument(
-        "--batch-size", type=int, default=100, help="Batch size for processing"
+        "--transform-all",
+        action="store_true",
+        help="Transform all games to clean format",
     )
-    parser.add_argument("--input-file", type=str, help="Input file path")
-    parser.add_argument("--output-file", type=str, help="Output file path")
+    parser.add_argument(
+        "--quality-report", action="store_true", help="Generate data quality report"
+    )
+    parser.add_argument(
+        "--db-path", type=str, default="data/games.db", help="Path to SQLite database"
+    )
 
-    parser.parse_args()
+    args = parser.parse_args()
 
-    # Initialize processing service
-    service = DataProcessingService()
-
-    # Run processing
-    service.run()
+    if args.transform_all:
+        transform_all_games(args.db_path)
+    elif args.quality_report:
+        generate_quality_report(args.db_path)
+    else:
+        print("❌ Please specify --transform-all or --quality-report")
+        parser.print_help()
 
 
 if __name__ == "__main__":
