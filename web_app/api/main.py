@@ -11,6 +11,7 @@ Usage:
 
 import logging
 import json
+import os
 import sys
 from pathlib import Path
 from typing import List, Dict, Optional
@@ -23,9 +24,9 @@ import uvicorn
 sys.path.append(str(Path(__file__).parent.parent.parent))
 
 # Import our recommendation model
-from data_pipeline.training.recommendation_model import (
+from data_pipeline.training.recommendation_model import (  # noqa: E402
     ContentBasedRecommendationModel,
-)  # noqa: E402
+)
 
 # Setup logging
 logging.basicConfig(
@@ -361,6 +362,11 @@ async def list_platforms():
 
 
 if __name__ == "__main__":
+    port = int(os.environ.get("PORT", 8000))
     uvicorn.run(
-        "web_app.api.main:app", host="0.0.0.0", port=8000, reload=True, log_level="info"
+        "web_app.api.main:app",
+        host="0.0.0.0",
+        port=port,
+        reload=False,
+        log_level="info",
     )
