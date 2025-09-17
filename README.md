@@ -7,19 +7,21 @@ Ett komplett system för att samla speldata från externa API:er, träna ML-mode
 Projektet är uppdelat i två huvudsakliga pipelines:
 
 ### 🏭 Data Pipeline (Fabriks-pipeline)
+
 - **Ingestion**: Samlar data från externa API:er
 - **Processing**: Städar och transformerar rådata
 - **Training**: Tränar ML-modeller för spelrekommendationer
 - **Deployment**: Distribuerar tränade modeller
 
 ### 🏪 Web App (Butiks-pipeline)
+
 - **API**: Backend som serverar rekommendationer
 - **Frontend**: Användargränssnitt för sökning och rekommendationer
 - **Deployment**: Applikationsdistribution
 
 ## Projektstruktur
 
-```
+```text
 igdb-project/
 ├── data-pipeline/          # Fabriks-pipeline
 │   ├── ingestion/         # API data collection

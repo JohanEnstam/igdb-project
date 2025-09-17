@@ -61,16 +61,16 @@ igdb-project/
 def process_game_data(raw_data: List[Dict[str, Any]]) -> pd.DataFrame:
     """
     Process raw game data from IGDB API into clean DataFrame.
-    
+
     Args:
         raw_data: List of raw game data dictionaries from IGDB API
-        
+
     Returns:
         Cleaned DataFrame with standardized columns
-        
+
     Raises:
         ValueError: If raw_data is empty or malformed
-        
+
     Example:
         >>> raw_data = [{"id": 1, "name": "Test Game"}]
         >>> df = process_game_data(raw_data)

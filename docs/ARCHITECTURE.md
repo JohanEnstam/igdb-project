@@ -2,7 +2,7 @@
 
 ## High-Level Overview
 
-```
+```text
 ┌─────────────────┐    ┌─────────────────┐    ┌─────────────────┐
 │   External API  │───▶│  Data Pipeline  │───▶│   ML Models     │
 │   (Game Data)   │    │                 │    │                 │
@@ -23,32 +23,37 @@
 
 ## Data Pipeline (Factory)
 
-### Components
+### Data Pipeline Components
+
 1. **Ingestion**: Collect data from external APIs
 2. **Processing**: Clean and transform raw data
 3. **Training**: Train ML models on processed data
 4. **Deployment**: Serve trained models
 
 ### Data Flow
-```
+
+```text
 External API → Raw Data → Cleaned Data → Training Data → Trained Model → Model Serving
 ```
 
 ## Web Application (Store)
 
-### Components
+### Web App Components
+
 1. **API**: Backend serving recommendations
 2. **Frontend**: User interface for search and recommendations
 3. **Deployment**: Application hosting and scaling
 
 ### Request Flow
-```
+
+```text
 User → Frontend → API → Model Serving → Recommendations → User
 ```
 
 ## Infrastructure
 
 ### GCP Services
+
 - **Cloud Storage**: Raw data storage
 - **BigQuery**: Processed data warehouse
 - **Cloud Run**: Model serving and API hosting
@@ -56,6 +61,7 @@ User → Frontend → API → Model Serving → Recommendations → User
 - **Cloud Composer**: Data pipeline orchestration
 
 ### Deployment
+
 - **Terraform**: Infrastructure as Code
 - **Docker**: Containerization
 - **GitHub Actions**: CI/CD automation
