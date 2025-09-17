@@ -58,7 +58,7 @@ class IGDBDataIngestion:
                 "grant_type": "client_credentials",
             }
 
-            response = requests.post(auth_url, data=auth_data)
+            response = requests.post(auth_url, data=auth_data, timeout=30)
             response.raise_for_status()
 
             auth_response = response.json()
