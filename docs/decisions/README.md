@@ -40,6 +40,8 @@ Each ADR follows this structure:
 - [ADR-007: ML Pipeline Implementation](007-ml-pipeline-implementation.md)
 - [ADR-008: Option B Lite Implementation](008-option-b-lite-implementation.md)
 - [ADR-009: Frontend Scalability Strategy](009-frontend-scalability-strategy.md)
+- [ADR-010: Docker Deployment Lessons](010-docker-deployment-lessons.md)
+- [ADR-011: App Engine Frontend Deployment](011-app-engine-frontend-deployment.md)
 
 ## Adding New ADRs
 

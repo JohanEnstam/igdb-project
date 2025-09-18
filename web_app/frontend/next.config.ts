@@ -1,15 +1,13 @@
 import type { NextConfig } from "next";
 
 const nextConfig: NextConfig = {
-  // Enable standalone output for Docker
-  output: 'standalone',
-
   // Configure API URL for production
   env: {
-    NEXT_PUBLIC_API_URL: process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8080',
+    NEXT_PUBLIC_API_URL: process.env.NEXT_PUBLIC_API_URL || 'https://igdb-api-staging-d6xpjrmqsa-ew.a.run.app',
   },
 
-  // Optimize for production
+  // App Engine-specific settings
+  trailingSlash: true,
   compress: true,
   poweredByHeader: false,
 

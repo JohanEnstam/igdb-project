@@ -292,10 +292,19 @@ Based on our complete professional foundation, I recommend:
 5. Deploy full stack to production
 
 **Frontend MVP Complete!** Now ready for:
+- **App Engine Deployment**: Next.js frontend to GCP App Engine
 - **Production Deployment**: Complete system ready for deployment
 - **Monitoring**: Professional observability and analytics
 - **Scaling**: More games for better recommendations
 - **Enhancements**: Additional features and improvements
+
+## Recent Lessons Learned
+
+### **Docker Deployment Challenges (ADR-010)**
+- **Issue**: Prolonged Docker deployment debugging (4+ hours)
+- **Root Cause**: Docker build context problems in CI/CD
+- **Solution**: Switched to GCP App Engine for frontend deployment
+- **Prevention**: Always start with simplest solution (native runtimes vs containers)
 
 ### **Production Deployment Ready**
 

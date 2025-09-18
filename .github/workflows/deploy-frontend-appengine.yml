@@ -35,8 +35,8 @@ jobs:
       - name: Deploy to App Engine
         run: |
           cd web_app/frontend
-          gcloud app deploy app.yaml --no-promote --quiet
+          gcloud app deploy app.yaml --quiet
 
       - name: Show service URL
         run: |
-          gcloud app services describe ${{ env.SERVICE_NAME }} --format 'value(defaultUrl)'
+          gcloud app browse --no-launch-browser

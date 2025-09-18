@@ -19,10 +19,10 @@ export default function Home() {
         {/* Header */}
         <div className="text-center mb-12">
           <h1 className="text-4xl font-bold text-slate-900 dark:text-slate-100 mb-4">
-            Upptäck Ditt Nästa Spel 🎮
+            Upptäck Ditt Nästa Spel 🎮✨
           </h1>
           <p className="text-lg text-slate-600 dark:text-slate-400 max-w-2xl mx-auto">
-            Hitta spel du kanske tycker om med AI-drivna rekommendationer baserade på dina preferenser
+            Hitta spel du tycker om med AI-drivna rekommendationer baserade på dina preferenser
           </p>
         </div>
 

@@ -306,9 +306,16 @@ interface GameRecommendation {
 - **Asset optimization**: Image and static asset optimization
 
 ### Deployment Targets
-- **Vercel**: Primary deployment platform
-- **Docker**: Containerized deployment option
-- **Static export**: Static site generation option
+- **GCP App Engine**: Primary deployment platform (Native Node.js runtime)
+- **Configuration**: app.yaml-based deployment
+- **CI/CD**: GitHub Actions with automated deployments
+- **Scaling**: Automatic scaling (0-10 instances)
+
+### Deployment Strategy (ADR-011)
+- **Approach**: Native Node.js runtime instead of Docker containers
+- **Benefits**: Simplified deployment, faster builds, higher reliability
+- **Configuration**: Single app.yaml file vs complex Docker setup
+- **Performance**: No container overhead, better resource utilization
 
 ## Monitoring
 
