@@ -7,6 +7,7 @@ const nextConfig: NextConfig = {
   },
 
   // App Engine-specific settings
+  output: 'standalone',
   trailingSlash: true,
   compress: true,
   poweredByHeader: false,
