@@ -6,6 +6,11 @@ name: CD Pipeline
 on:
   push:
     branches: [main]
+    paths:
+      - 'data_pipeline/**'
+      - 'web_app/api/**'
+      - 'shared/**'
+      - '.github/workflows/deploy.yml'
   workflow_dispatch:
     inputs:
       environment:

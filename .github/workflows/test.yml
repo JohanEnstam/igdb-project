@@ -6,8 +6,20 @@ name: Test Pipeline
 on:
   push:
     branches: [main, develop]
+    paths:
+      - 'data_pipeline/**'
+      - 'web_app/api/**'
+      - 'shared/**'
+      - 'tests/**'
+      - '.github/workflows/test.yml'
   pull_request:
     branches: [main, develop]
+    paths:
+      - 'data_pipeline/**'
+      - 'web_app/api/**'
+      - 'shared/**'
+      - 'tests/**'
+      - '.github/workflows/test.yml'
   schedule:
     # Run tests daily at 2 AM UTC
     - cron: '0 2 * * *'

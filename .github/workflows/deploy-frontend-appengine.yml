@@ -1,0 +1,42 @@
+name: Deploy Frontend to App Engine
+
+on:
+  push:
+    branches: [main]
+    paths:
+      - 'web_app/frontend/**'
+      - '.github/workflows/deploy-frontend-appengine.yml'
+  workflow_dispatch:
+
+env:
+  PROJECT_ID: igdb-recommendation-system
+  SERVICE_NAME: frontend
+
+jobs:
+  deploy:
+    name: Deploy Frontend to App Engine
+    runs-on: ubuntu-latest
+    environment: production
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Set up Cloud SDK
+        uses: google-github-actions/setup-gcloud@v2
+        with:
+          project_id: ${{ env.PROJECT_ID }}
+
+      - name: Authenticate to Google Cloud
+        uses: google-github-actions/auth@v2
+        with:
+          credentials_json: ${{ secrets.GCP_SA_KEY }}
+
+      - name: Deploy to App Engine
+        run: |
+          cd web_app/frontend
+          gcloud app deploy app.yaml --quiet
+
+      - name: Show service URL
+        run: |
+          gcloud app services describe ${{ env.SERVICE_NAME }} --format 'value(defaultUrl)'

@@ -6,8 +6,18 @@ name: CI Pipeline
 on:
   push:
     branches: [main, develop]
+    paths:
+      - 'data_pipeline/**'
+      - 'web_app/api/**'
+      - 'shared/**'
+      - '.github/workflows/ci.yml'
   pull_request:
     branches: [main, develop]
+    paths:
+      - 'data_pipeline/**'
+      - 'web_app/api/**'
+      - 'shared/**'
+      - '.github/workflows/ci.yml'
 
 env:
   PYTHON_VERSION: '3.11'
