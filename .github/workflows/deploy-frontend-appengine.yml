@@ -35,7 +35,7 @@ jobs:
       - name: Deploy to App Engine
         run: |
           cd web_app/frontend
-          gcloud app deploy app.yaml --quiet
+          gcloud app deploy app.yaml --no-promote --quiet
 
       - name: Show service URL
         run: |
