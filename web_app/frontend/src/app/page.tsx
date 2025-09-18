@@ -22,7 +22,7 @@ export default function Home() {
             Upptäck Ditt Nästa Spel 🎮
           </h1>
           <p className="text-lg text-slate-600 dark:text-slate-400 max-w-2xl mx-auto">
-            Hitta spel du kommer att älska med AI-drivna rekommendationer baserade på dina preferenser
+            Hitta spel du kanske tycker om med AI-drivna rekommendationer baserade på dina preferenser
           </p>
         </div>
 
