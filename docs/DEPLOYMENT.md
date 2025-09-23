@@ -1,7 +1,7 @@
 # Deployment Guide - IGDB Game Recommendation System
 
 **Datum:** 2025-01-23  
-**Status:** ✅ Backend Working, ⚠️ Frontend Needs Update  
+**Status:** ✅ Backend Working, ✅ Frontend Working  
 **Senast uppdaterad:** 2025-01-23
 
 ## 🎯 **Översikt**
@@ -20,7 +20,8 @@ Detta dokument beskriver den kompletta deployment-strategin för IGDB Game Recom
 
 ### **Frontend Service**
 - **Next.js Application**: React-based user interface
-- **Deployment Target**: Cloud Run (App Engine non-functional)
+- **Deployment Target**: Cloud Run ✅ **WORKING**
+- **URL**: https://igdb-frontend-d6xpjrmqsa-ew.a.run.app
 
 ## 🐳 **Docker Containerization**
 
@@ -33,16 +34,17 @@ docker build -f data_pipeline/training/Dockerfile -t igdb-training:latest .
 docker build -f web_app/Dockerfile -t igdb-api:latest .
 ```
 
-### **Frontend Service** ⚠️ **NEEDS UPDATE**
+### **Frontend Service** ✅ **WORKING**
 ```bash
-# Frontend Docker (ready for Cloud Run)
+# Frontend Docker (Cloud Run ready)
 docker build -f web_app/frontend/Dockerfile -t igdb-frontend:latest .
 ```
 
 ### **Container Registry**
-- **Registry**: `gcr.io/igdb-recommendation-system/`
-- **Images**: Automatically built and pushed on main branch
+- **Registry**: `europe-west1-docker.pkg.dev/igdb-recommendation-system/igdb-repo/`
+- **Images**: Frontend and backend images
 - **Tags**: Latest, commit SHA, branch names
+- **Status**: ✅ **WORKING**
 
 ## 🚀 **GCP Deployment**
 
@@ -53,17 +55,24 @@ docker build -f web_app/frontend/Dockerfile -t igdb-frontend:latest .
 - **Region**: europe-west1
 - **Status**: Initialized and tested
 
+#### **Terraform Resources**
+- **Artifact Registry**: `igdb-repo` (Docker repository)
+- **Cloud Run Frontend**: `igdb-frontend` (public access)
+- **Cloud Run Backend**: `igdb-api-staging` (existing)
+- **Storage Buckets**: Test bucket and state management
+
 ### **Backend Deployment** ✅ **WORKING**
 - **Service**: Google Cloud Run
 - **Region**: europe-west1
 - **URL**: https://igdb-api-staging-d6xpjrmqsa-ew.a.run.app
 - **Status**: Active and functional
 
-### **Frontend Deployment** ❌ **NON-FUNCTIONAL**
-- **Current Target**: App Engine (broken)
-- **Error**: `Cannot find module '/workspace/server.js'`
-- **Recommended Target**: Cloud Run
-- **Status**: Needs implementation
+### **Frontend Deployment** ✅ **WORKING**
+- **Service**: Google Cloud Run
+- **Region**: europe-west1
+- **URL**: https://igdb-frontend-d6xpjrmqsa-ew.a.run.app
+- **Status**: Active and functional
+- **Docker Image**: `europe-west1-docker.pkg.dev/igdb-recommendation-system/igdb-repo/igdb-frontend:latest`
 
 ## 🔄 **CI/CD Pipeline**
 
