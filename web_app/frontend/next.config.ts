@@ -6,9 +6,8 @@ const nextConfig: NextConfig = {
     NEXT_PUBLIC_API_URL: process.env.NEXT_PUBLIC_API_URL || 'https://igdb-api-staging-d6xpjrmqsa-ew.a.run.app',
   },
 
-  // App Engine-specific settings
+  // Cloud Run-optimized settings
   output: 'standalone',
-  trailingSlash: true,
   compress: true,
   poweredByHeader: false,
 
