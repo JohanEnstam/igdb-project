@@ -1,7 +1,7 @@
 # Documentation Index - IGDB Game Recommendation System
 
 **Datum:** 2025-01-23  
-**Status:** ✅ Updated with deployment plan integration  
+**Status:** ✅ Updated with Cloud Run Jobs pipeline automation  
 **Senast uppdaterad:** 2025-01-23
 
 ## 📚 **Dokumentationsöversikt**
@@ -16,10 +16,11 @@ Detta är den centrala dokumentationskatalogen för IGDB Game Recommendation Sys
 - **[DATA_FLOW.md](DATA_FLOW.md)** - Dataflöde och pipeline-arkitektur
 
 ### **Deployment & Infrastructure**
-- **[DEPLOYMENT.md](DEPLOYMENT.md)** - Komplett deployment guide
-- **[DEPLOYMENT_PLAN.md](DEPLOYMENT_PLAN.md)** - Detaljerad 4-stegs implementation plan med Terraform och Cloud Run (NY)
+- **[DEPLOYMENT.md](DEPLOYMENT.md)** - Komplett deployment guide med Cloud Run Jobs
+- **[DEPLOYMENT_PLAN.md](DEPLOYMENT_PLAN.md)** - Detaljerad 4-stegs implementation plan med Terraform och Cloud Run
 - **[DOCKER_SETUP.md](DOCKER_SETUP.md)** - Docker containerization setup
 - **[FRONTEND_ARCHITECTURE.md](FRONTEND_ARCHITECTURE.md)** - Frontend arkitektur och deployment
+- **[CICD_PIPELINE.md](CICD_PIPELINE.md)** - CI/CD pipeline dokumentation
 
 ### **Kunskapsbank**
 - **[LESSONS_LEARNED.md](LESSONS_LEARNED.md)** - Centraliserad kunskapsbank för problem och lösningar (NY)

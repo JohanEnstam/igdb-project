@@ -145,6 +145,43 @@ User → API → Model Registry → Cloud Storage → ML Model → Recommendatio
 - **Graceful Fallback**: Local data backup if Cloud Storage unavailable
 - **Health Monitoring**: GCS connectivity and data accessibility checks
 
+### Cloud Run Jobs Pipeline
+
+#### **Pipeline Jobs**
+1. **igdb-ingestion**: 
+   - **Purpose**: Data collection from IGDB API
+   - **Schedule**: Daily at 02:00 Europe/Stockholm via Cloud Scheduler
+   - **Resources**: 1 CPU, 1Gi memory, 1 hour timeout
+   - **Output**: Smart ingestion to SQLite database
+   - **GCS Integration**: Optional upload to data bucket
+
+2. **igdb-processing**: 
+   - **Purpose**: Data cleaning and transformation
+   - **Trigger**: Manual or scheduled execution
+   - **Resources**: 1 CPU, 1Gi memory, 30 minutes timeout
+   - **Input**: Raw data from ingestion
+   - **Output**: Cleaned data to GCS data bucket
+
+3. **igdb-training**: 
+   - **Purpose**: ML model training
+   - **Trigger**: Manual or scheduled execution
+   - **Resources**: 2 CPU, 2Gi memory, 1 hour timeout
+   - **Input**: Cleaned data from processing
+   - **Output**: Trained models to GCS models bucket
+
+#### **Cloud Scheduler**
+- **Job**: `igdb-ingestion-scheduler`
+- **Schedule**: `0 2 * * *` (Daily at 02:00 Europe/Stockholm)
+- **Target**: HTTP POST to Cloud Run Jobs API
+- **Authentication**: OIDC token with service account
+- **Status**: Active and functional
+
+#### **Secret Management**
+- **Secrets**: `IGDB_CLIENT_ID`, `IGDB_CLIENT_SECRET`
+- **Access**: Cloud Run Jobs via Secret Manager
+- **IAM**: Service account with `roles/secretmanager.secretAccessor`
+- **Security**: Encrypted at rest and in transit
+
 ### Future GCP Services
 
 - **BigQuery**: Processed data warehouse

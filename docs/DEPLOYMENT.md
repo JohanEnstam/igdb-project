@@ -59,7 +59,13 @@ docker build -f web_app/frontend/Dockerfile -t igdb-frontend:latest .
 - **Artifact Registry**: `igdb-repo` (Docker repository)
 - **Cloud Run Frontend**: `igdb-frontend` (public access)
 - **Cloud Run Backend**: `igdb-api-staging` (existing)
-- **Storage Buckets**: Test bucket and state management
+- **Cloud Run Jobs**: `igdb-ingestion`, `igdb-processing`, `igdb-training`
+- **Cloud Scheduler**: `igdb-ingestion-scheduler` (daily data ingestion)
+- **Storage Buckets**: 
+  - `igdb-recommendation-system-data` (processed data)
+  - `igdb-recommendation-system-models` (ML models)
+  - `igdb-recommendation-system-test` (test bucket)
+- **Secret Manager**: IAM bindings for Cloud Run Jobs
 
 ### **Backend Deployment** ✅ **WORKING**
 - **Service**: Google Cloud Run
@@ -73,6 +79,33 @@ docker build -f web_app/frontend/Dockerfile -t igdb-frontend:latest .
 - **URL**: https://igdb-frontend-d6xpjrmqsa-ew.a.run.app
 - **Status**: Active and functional
 - **Docker Image**: `europe-west1-docker.pkg.dev/igdb-recommendation-system/igdb-repo/igdb-frontend:latest`
+
+### **Pipeline Jobs Deployment** ✅ **WORKING**
+- **Service**: Google Cloud Run Jobs
+- **Region**: europe-west1
+- **Jobs**: 
+  - `igdb-ingestion` - Data collection from IGDB API
+  - `igdb-processing` - Data cleaning and transformation
+  - `igdb-training` - ML model training
+- **Status**: Active and functional
+- **Docker Images**: 
+  - `europe-west1-docker.pkg.dev/igdb-recommendation-system/igdb-repo/igdb-ingestion:latest`
+  - `europe-west1-docker.pkg.dev/igdb-recommendation-system/igdb-repo/igdb-processing:latest`
+  - `europe-west1-docker.pkg.dev/igdb-recommendation-system/igdb-repo/igdb-training:latest`
+
+### **Cloud Scheduler** ✅ **WORKING**
+- **Service**: Google Cloud Scheduler
+- **Job**: `igdb-ingestion-scheduler`
+- **Schedule**: Daily at 02:00 Europe/Stockholm (`0 2 * * *`)
+- **Target**: Triggers `igdb-ingestion` Cloud Run Job
+- **Status**: Active and functional
+
+### **Storage Buckets** ✅ **WORKING**
+- **Data Bucket**: `igdb-recommendation-system-data`
+- **Models Bucket**: `igdb-recommendation-system-models`
+- **Region**: europe-west1
+- **Lifecycle Rules**: Auto-delete after 30/90 days
+- **Status**: Active and functional
 
 ## 🔄 **CI/CD Pipeline**
 
