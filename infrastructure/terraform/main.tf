@@ -16,21 +16,7 @@ provider "google" {
   region  = "europe-west1"
 }
 
-# Test bucket to verify Terraform setup
-resource "google_storage_bucket" "test_bucket" {
-  name          = "igdb-recommendation-system-test"
-  location      = "europe-west1"
-  force_destroy = true
-
-  lifecycle_rule {
-    condition {
-      age = 7
-    }
-    action {
-      type = "Delete"
-    }
-  }
-}
+# Test bucket removed - was used for initial Terraform setup verification
 
 # Artifact Registry for Docker images
 resource "google_artifact_registry_repository" "igdb_repo" {
@@ -245,6 +231,97 @@ resource "google_cloud_scheduler_job" "ingestion_scheduler" {
       service_account_email = "github-actions@igdb-recommendation-system.iam.gserviceaccount.com"
     }
   }
+}
+
+# Monitoring and Alerting
+# Note: Latency alert temporarily disabled - metric may not be available until service receives traffic
+# To enable: Uncomment below and ensure frontend service has received requests
+# resource "google_monitoring_alert_policy" "frontend_latency_alert" {
+#   display_name = "Frontend High Latency Alert"
+#   combiner     = "OR"
+#   
+#   conditions {
+#     display_name = "High Latency on igdb-frontend"
+#     condition_threshold {
+#       filter     = "metric.type=\"run.googleapis.com/request/latencies\" AND resource.type=\"cloud_run_revision\" AND resource.labels.service_name=\"igdb-frontend\""
+#       duration   = "60s"
+#       comparison = "COMPARISON_GT"
+#       threshold_value = 1.0  # 1 second (in seconds for DISTRIBUTION metric)
+#       
+#       aggregations {
+#         alignment_period   = "60s"
+#         per_series_aligner = "ALIGN_PERCENTILE_95"  # 95th percentile for latency
+#       }
+#     }
+#   }
+#   
+#   notification_channels = []  # Can be extended with email/Slack channels later
+# }
+
+resource "google_monitoring_alert_policy" "frontend_error_alert" {
+  display_name = "Frontend Error Alert"
+  combiner     = "OR"
+  
+  conditions {
+    display_name = "High Error Rate on igdb-frontend"
+    condition_threshold {
+      filter     = "metric.type=\"run.googleapis.com/request_count\" AND resource.type=\"cloud_run_revision\" AND resource.label.service_name=\"igdb-frontend\" AND metric.label.response_code_class=\"5xx\""
+      duration   = "60s"
+      comparison = "COMPARISON_GT"
+      threshold_value = 1
+      
+      aggregations {
+        alignment_period   = "60s"
+        per_series_aligner = "ALIGN_RATE"
+      }
+    }
+  }
+  
+  notification_channels = []
+}
+
+resource "google_monitoring_alert_policy" "api_error_alert" {
+  display_name = "API Error Alert"
+  combiner     = "OR"
+  
+  conditions {
+    display_name = "High Error Rate on igdb-api-staging"
+    condition_threshold {
+      filter     = "metric.type=\"run.googleapis.com/request_count\" AND resource.type=\"cloud_run_revision\" AND resource.label.service_name=\"igdb-api-staging\" AND metric.label.response_code_class=\"5xx\""
+      duration   = "60s"
+      comparison = "COMPARISON_GT"
+      threshold_value = 1
+      
+      aggregations {
+        alignment_period   = "60s"
+        per_series_aligner = "ALIGN_RATE"
+      }
+    }
+  }
+  
+  notification_channels = []
+}
+
+resource "google_monitoring_alert_policy" "job_failure_alert" {
+  display_name = "Pipeline Job Failure Alert"
+  combiner     = "OR"
+  
+  conditions {
+    display_name = "Job Execution Failed"
+    condition_threshold {
+      filter     = "metric.type=\"run.googleapis.com/job/completed_task_attempt_count\" AND resource.type=\"cloud_run_job\" AND metric.label.result=\"failed\""
+      duration   = "300s"
+      comparison = "COMPARISON_GT"
+      threshold_value = 0
+      
+      aggregations {
+        alignment_period   = "300s"
+        per_series_aligner = "ALIGN_RATE"
+      }
+    }
+  }
+  
+  notification_channels = []
 }
 
 # Outputs
