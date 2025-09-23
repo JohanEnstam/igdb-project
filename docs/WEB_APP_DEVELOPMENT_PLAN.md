@@ -35,10 +35,10 @@ Detta dokument beskriver den detaljerade handlingsplanen för att utveckla web-a
 **Status**: 📋 **PLANNED**
 
 #### **Tekniska Detaljer:**
-1. **Dependencies**: Lägg till `authlib==1.3.1` och `python-jose[cryptography]==3.3.0` i `web_app/requirements.txt`
+1. **Dependencies**: Kontrollera befintliga i `web_app/requirements.txt` innan installation. Lägg till senaste kompatibla versioner av `authlib` och `python-jose[cryptography]` via pip install
 2. **FastAPI Integration**: Använd `authlib` med GCP Secret Manager för secrets
 3. **Admin Endpoints**: Skapa `/admin/status` med spelantal och modell-status
-4. **OAuth Configuration**: Konfigurera Google OAuth2 i GCP Console
+4. **OAuth Configuration**: Konfigurera Google OAuth2 i GCP Console med `redirect_uri` till backend-URL (`https://igdb-api-staging-d6xpjrmqsa-ew.a.run.app/callback`). Använd `SessionMiddleware` med secret från Secret Manager för prod-säkerhet
 
 #### **Success-Kriterier:**
 - ✅ `/admin/status` kräver Google-login
@@ -70,9 +70,9 @@ async def admin_status():
 **Status**: 📋 **PLANNED**
 
 #### **Tekniska Detaljer:**
-1. **Dependencies**: Installera `@react-oauth/google` och `axios`
+1. **Dependencies**: Kontrollera befintliga i `web_app/frontend/package.json` innan installation. Lägg till senaste kompatibla versioner av `@react-oauth/google` och `axios` via npm install
 2. **Admin Layout**: Skapa `src/app/admin/layout.tsx` för auth-skydd
-3. **Dashboard**: Implementera `src/app/admin/page.tsx` med spelantal och modell-status
+3. **Dashboard**: Implementera `src/app/admin/page.tsx` med spelantal och modell-status. Använd befintlig `src/components/ui/` för Card/Buttons från Shadcn/ui
 4. **Terraform Integration**: Uppdatera Cloud Run service med `NEXT_PUBLIC_GOOGLE_CLIENT_ID`
 
 #### **Success-Kriterier:**
@@ -109,7 +109,7 @@ export default function AdminDashboard() {
 1. **Monitoring Endpoints**: Implementera `/admin/monitoring` med GCP Monitoring API
 2. **Pipeline Triggers**: Skapa `/admin/pipeline/trigger` för job-execution
 3. **Frontend Charts**: Använd Chart.js för belastningsgrafer
-4. **IAM Configuration**: Uppdatera Terraform för Monitoring API-åtkomst
+4. **IAM Configuration**: Uppdatera Terraform för Monitoring API-åtkomst. Ge SA `roles/monitoring.viewer` via Terraform
 
 #### **Success-Kriterier:**
 - ✅ Monitoring visar belastning (requests/60s)
@@ -137,12 +137,17 @@ async def admin_monitoring():
 #### **Tekniska Detaljer:**
 1. **Skalbarhetstest**: Uppdatera ingestion med `--limit 5000`
 2. **Performance Validation**: Verifiera training-tid <5min
-3. **BigQuery Migration**: Om nödvändigt för >10k spel
+3. **BigQuery Migration**: Implementera för 5k+ spel om query-tid på GCS JSON >10s; migrera till BigQuery för skalbarhet
 4. **Dokumentation**: Uppdatera alla docs och skapa ADR
+
+#### **Skalbarhetstest Detaljer:**
+- **Stegvis Test**: Börja med 2k, sedan 5k spel via --limit
+- **Verifiering**: Kontrollera GCS-fil med `gsutil cat gs://igdb-recommendation-system-data/games_clean.json | jq length`
+- **Optimering**: Om training >5min, använd BigQuery för query (skapa dataset `games_dataset`)
 
 #### **Success-Kriterier:**
 - ✅ System hanterar 5k+ spel stabilt
-- ✅ Kontrollpanel visar uppdaterat spelantal
+- ✅ Kontrollpanel visar uppdaterat spelantal (aktuellt ~1,242; mål 5,000+ efter test)
 - ✅ Dokumentation komplett
 - ✅ ADR skapad för panel-design
 
@@ -161,6 +166,7 @@ gcloud run jobs execute igdb-ingestion --region europe-west1
 - GCP Secret Manager integration
 - Admin endpoints med auth-skydd
 - GCP Monitoring API integration
+- IAM för Monitoring: Ge SA `roles/monitoring.viewer` via Terraform
 
 ### **Frontend (Next.js):**
 - Google Auth med `@react-oauth/google`
@@ -173,15 +179,21 @@ gcloud run jobs execute igdb-ingestion --region europe-west1
 - IAM-konfiguration för Monitoring API
 - Cloud Run environment variables
 
+### **Kostnads- och Prestandaestimat:**
+- **Auth**: Gratis (OAuth-tokens), +$0.01/1000 calls
+- **Monitoring API**: ~$0.10/månad för queries
+- **BigQuery (om migrering)**: ~$5/TB query; gratis för små dataset
+- **Prestanda för 5k Spel**: Förväntad training-tid <5min; testa med `time gcloud run jobs execute igdb-training`
+
 ## 📊 **Tidsuppskattning**
 
-| Steg | Beskrivning | Tid | Status |
-|------|-------------|-----|--------|
-| 1 | Google Auth + Admin Endpoints | 3-4 timmar | 📋 Planned |
-| 2 | Kontrollpanel Frontend | 4-6 timmar | 📋 Planned |
-| 3 | Monitoring + Pipeline Integration | 3-4 timmar | 📋 Planned |
-| 4 | Skalbarhetstest + Dokumentation | 2-4 timmar | 📋 Planned |
-| **Totalt** | **Komplett Implementation** | **12-18 timmar** | **📋 Planned** |
+| Steg | Beskrivning | Tid | Beroenden | Status |
+|------|-------------|-----|-----------|--------|
+| 1 | Google Auth + Admin Endpoints | 3-4 timmar | GCP Secret Manager access | 📋 Planned |
+| 2 | Kontrollpanel Frontend | 4-6 timmar | Steg 1 completion | 📋 Planned |
+| 3 | Monitoring + Pipeline Integration | 3-4 timmar | Steg 2 completion | 📋 Planned |
+| 4 | Skalbarhetstest + Dokumentation | 2-4 timmar | Steg 3 completion | 📋 Planned |
+| **Totalt** | **Komplett Implementation** | **12-18 timmar** | **+2 timmar buffer för BigQuery** | **📋 Planned** |
 
 ## 🎯 **Success-Kriterier för Hela Projektet**
 
@@ -217,6 +229,12 @@ gcloud run jobs execute igdb-ingestion --region europe-west1
 - **Dokumentation**: Uppdatera docs parallellt med utveckling
 - **Rollback**: Ha fallback-planer redo
 
+### **Rollback-strategier:**
+- **Steg 1**: Om auth misslyckas, revert backend-kod och redeploy via CI/CD. Använd `terraform destroy` för IAM-ändringar
+- **Steg 2**: Revert frontend-kod; testa lokalt med `npm run dev` innan push
+- **Steg 3**: Om monitoring-integration felar, revert API-calls; fallback till Console för manuella checks
+- **Steg 4**: Om skalbarhetstest misslyckas, revert till --limit 1000; rensa extra data via `gsutil rm`
+
 ## 📚 **Dokumentation som Uppdateras**
 
 ### **Teknisk Dokumentation:**
@@ -232,6 +250,7 @@ gcloud run jobs execute igdb-ingestion --region europe-west1
 
 ### **Lärdomar:**
 - `LESSONS_LEARNED.md` - Auth- och skalbarhetsissues
+- **Kodbas-Verifiering**: Alltid verifiera data-volym med `jq length` istället för `wc -l`
 
 ## 🔗 **Referenser**
 
@@ -251,5 +270,7 @@ gcloud run jobs execute igdb-ingestion --region europe-west1
 ---
 
 **Plan skapad**: 2025-09-23  
+**Plan uppdaterad**: 2025-09-23 (baserat på Grok's feedback)  
 **Plan godkänd**: Väntar på godkännande  
-**Plan start**: Väntar på start-signal
+**Plan start**: Väntar på start-signal  
+**Kostnad**: +$0.20/månad för auth/monitoring
