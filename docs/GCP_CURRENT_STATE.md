@@ -1,13 +1,31 @@
 # GCP Current State Documentation
 
-**Datum:** 2025-09-18  
+**Datum:** 2025-09-23  
 **Projekt:** igdb-recommendation-system  
 **Projektnummer:** 18815352760  
 **Region:** europe-west1 (primär)
 
 ## 📊 Översikt
 
-Detta dokument beskriver den aktuella tillståndet av vår Google Cloud Platform miljö efter genomförd städning och inventering.
+Detta dokument beskriver den aktuella tillståndet av vår Google Cloud Platform miljö efter genomförd städning och inventering. **Uppdaterad efter GCP cleanup 2025-09-23.**
+
+## 🧹 Cleanup av Experimentella Resurser
+
+**Status:** ✅ Complete  
+**Last Updated:** 2025-09-23  
+**Next Review:** 2025-09-30  
+**Description:** Rensade gamla Cloud Storage buckets, inaktiverade Compute Engine API, och uppdaterade Terraform state efter Steg 1-3 implementation.  
+**Referenser:** [DEPLOYMENT.md](DEPLOYMENT.md), [LESSONS_LEARNED.md](LESSONS_LEARNED.md)
+
+### Borttagna Resurser
+- **Cloud Storage Buckets:**
+  - `igdb-recommendation-system-test` (tom test bucket)
+  - `igdb-recommendation-system.appspot.com` (tom App Engine bucket)
+  - `igdb-recommendation-system_cloudbuild` (gammal Cloud Build artifact)
+- **APIs:**
+  - `compute.googleapis.com` (oavsiktligt aktiverad, inga instanser)
+- **Terraform State:**
+  - `google_storage_bucket.test_bucket` (borttagen från state)
 
 ## 🏗️ Projekt Information
 
@@ -63,12 +81,25 @@ storage.googleapis.com               Cloud Storage API
 | Service | Region | URL | Status | Last Deployed |
 |---------|--------|-----|--------|---------------|
 | igdb-api-staging | europe-west1 | https://igdb-api-staging-d6xpjrmqsa-ew.a.run.app | ✅ Active | 2025-09-18T12:04:15Z |
+| igdb-frontend | europe-west1 | https://igdb-frontend-d6xpjrmqsa-ew.a.run.app | ✅ Active | 2025-09-23T10:54:29Z |
 
-### ❌ Borttagna Services
+## 🏃 Cloud Run Jobs
 
-| Service | Status | Anledning |
-|---------|--------|-----------|
-| igdb-ingestion-staging | ❌ Deleted | Inaktiv service |
+### ✅ Aktiva Jobs
+
+| Job | Region | Status | Last Run | Created |
+|-----|--------|--------|----------|---------|
+| igdb-ingestion | europe-west1 | ✅ Active | 2025-09-23T11:20:02Z | 2025-09-23T11:04:51Z |
+| igdb-processing | europe-west1 | ✅ Active | - | 2025-09-23T11:04:51Z |
+| igdb-training | europe-west1 | ✅ Active | - | 2025-09-23T11:04:51Z |
+
+## ⏰ Cloud Scheduler
+
+### ✅ Aktiva Jobs
+
+| Job | Region | Schedule | Status | Target |
+|-----|--------|----------|--------|--------|
+| igdb-ingestion-scheduler | europe-west1 | 0 2 * * * (Europe/Stockholm) | ✅ ENABLED | HTTP |
 
 ## 🏗️ App Engine
 
@@ -92,14 +123,13 @@ Error: Cannot find module '/workspace/server.js'
 
 ## 🗄️ Cloud Storage Buckets
 
-### ✅ Aktiva Buckets
+### ✅ Aktiva Buckets (efter cleanup)
 
 | Bucket Name | Location | Purpose | Status |
 |-------------|----------|---------|--------|
 | igdb-recommendation-system-data | europe-west1 | Game data storage | ✅ Active |
 | igdb-recommendation-system-models | europe-west1 | ML models storage | ✅ Active |
-| igdb-recommendation-system.appspot.com | EU | App Engine default bucket | ✅ Active |
-| igdb-recommendation-system_cloudbuild | US | Cloud Build artifacts | ✅ Active |
+| igdb-recommendation-system-tf-state | europe-west1 | Terraform state | ✅ Active |
 
 ### 📁 Bucket Contents
 
@@ -110,25 +140,24 @@ Error: Cannot find module '/workspace/server.js'
 - `recommendation_model.pkl` - Trained ML model
 - `recommendation_model_feature_extractor.pkl` - Feature extractor
 
-**staging.igdb-recommendation-system.appspot.com:**
-- Status: ✅ Empty (after cleanup)
-- Previous: 243 files (removed during cleanup)
+**igdb-recommendation-system-tf-state:**
+- Terraform state files för infrastruktur management
 
 ## 🐳 Artifact Registry
 
-### Docker Images
+### ✅ Aktiva Docker Images
 
-#### App Engine Images (gae-standard)
-- **Repository:** europe-west1-docker.pkg.dev/igdb-recommendation-system/gae-standard
-- **Images:** 10+ versions
-- **Total Size:** 2.5GB
-- **Status:** ❌ Needs cleanup (all failed deployments)
+**Repository:** europe-west1-docker.pkg.dev/igdb-recommendation-system/igdb-repo
 
-#### Cloud Run Images (gcr.io)
-- **Repository:** us-docker.pkg.dev/igdb-recommendation-system/gcr.io
-- **Images:** 10+ versions
-- **Total Size:** 5.4GB
-- **Status:** ⚠️ Partial cleanup needed (keep latest, remove old)
+| Image | Tags | Size | Status |
+|-------|------|------|--------|
+| igdb-frontend | latest | ~50MB | ✅ Active |
+| igdb-ingestion | latest | ~200MB | ✅ Active |
+| igdb-processing | latest | ~200MB | ✅ Active |
+| igdb-training | latest | ~200MB | ✅ Active |
+
+**Total Size:** ~650MB (efter cleanup)  
+**Status:** ✅ Clean och optimerad
 
 ## 👥 Service Accounts
 
@@ -151,16 +180,23 @@ Error: Cannot find module '/workspace/server.js'
 - Backend workflows: Trigger only on `data_pipeline/**`, `web_app/api/**`, `shared/**`
 - Frontend workflow: Trigger only on `web_app/frontend/**`
 
-## 💰 Kostnadsuppskattning
+## 💰 Kostnadsuppskattning (efter cleanup)
 
 ### Aktiva Resurser
-- **Cloud Run:** ~$0.50/månad (low traffic)
-- **Cloud Storage:** ~$0.10/månad (small data)
-- **Artifact Registry:** ~$0.50/månad (8GB images)
+- **Cloud Run Services:** ~$0.30/månad (2 services, low traffic)
+- **Cloud Run Jobs:** ~$0.20/månad (3 jobs, scheduled runs)
+- **Cloud Storage:** ~$0.10/månad (3 buckets, small data)
+- **Artifact Registry:** ~$0.15/månad (650MB images)
+- **Cloud Scheduler:** ~$0.05/månad (1 job)
 
-### Potentiella Besparingar
-- **Docker Images Cleanup:** ~$0.30/månad (remove old images)
-- **App Engine Cleanup:** ~$0.20/månad (remove failed service)
+**Total uppskattad kostnad:** ~$0.80/månad
+
+### Besparingar från Cleanup
+- **Borttagna buckets:** ~$0.10/månad
+- **Inaktiverad Compute Engine API:** ~$0.05/månad
+- **Optimerade Docker images:** ~$0.20/månad
+
+**Total besparing:** ~$0.35/månad
 
 ## 🚨 Kända Problem
 
@@ -209,6 +245,6 @@ Error: Cannot find module '/workspace/server.js'
 
 ---
 
-**Senast uppdaterad:** 2025-09-18  
+**Senast uppdaterad:** 2025-09-23  
 **Uppdaterad av:** AI Assistant  
-**Nästa review:** 2025-09-25
+**Nästa review:** 2025-09-30

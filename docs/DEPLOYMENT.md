@@ -1,8 +1,8 @@
 # Deployment Guide - IGDB Game Recommendation System
 
-**Datum:** 2025-01-23  
-**Status:** ✅ Backend Working, ✅ Frontend Working  
-**Senast uppdaterad:** 2025-01-23
+**Datum:** 2025-09-23  
+**Status:** ✅ Backend Working, ✅ Frontend Working, ✅ Pipeline Working  
+**Senast uppdaterad:** 2025-09-23
 
 ## 🎯 **Översikt**
 
@@ -254,6 +254,31 @@ gcloud app deploy app.yaml
 - [ADR-011: App Engine Frontend Deployment](decisions/011-app-engine-frontend-deployment.md)
 - [GCP Current State](GCP_CURRENT_STATE.md)
 - [Frontend Architecture](FRONTEND_ARCHITECTURE.md)
+
+## 🧹 **GCP Resource Cleanup**
+
+**Status:** ✅ Complete  
+**Last Updated:** 2025-09-23  
+**Next Review:** 2025-09-30  
+**Description:** Tog bort överblivna resurser från experimentering. Endast aktiva Cloud Run services, jobs, och buckets kvar.  
+**Referenser:** [GCP_CURRENT_STATE.md](GCP_CURRENT_STATE.md)
+
+### Cleanup Summary
+- **Borttagna Cloud Storage Buckets:**
+  - `igdb-recommendation-system-test` (tom test bucket)
+  - `igdb-recommendation-system.appspot.com` (tom App Engine bucket)
+  - `igdb-recommendation-system_cloudbuild` (gammal Cloud Build artifact)
+- **Inaktiverade APIs:**
+  - `compute.googleapis.com` (oavsiktligt aktiverad, inga instanser)
+- **Terraform State:**
+  - Uppdaterat för att reflektera rensad miljö
+
+### Aktiva Resurser (efter cleanup)
+- **Cloud Run Services:** `igdb-api-staging`, `igdb-frontend`
+- **Cloud Run Jobs:** `igdb-ingestion`, `igdb-processing`, `igdb-training`
+- **Cloud Scheduler:** `igdb-ingestion-scheduler`
+- **GCS Buckets:** `data`, `models`, `tf-state`
+- **Artifact Registry:** `igdb-repo` med aktiva images
 
 ## 🔗 **Useful Commands**
 

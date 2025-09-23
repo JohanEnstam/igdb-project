@@ -1,6 +1,6 @@
 # Lessons Learned - IGDB Game Recommendation System
 
-**Datum:** 2025-09-18  
+**Datum:** 2025-09-23  
 **Projekt:** igdb-recommendation-system  
 **Syfte:** Centraliserad kunskapsbank för deployment-problem och lösningar
 
@@ -43,6 +43,47 @@ Error: Cannot find module '/workspace/server.js'
 - **Benefits**: Proven Docker setup, bättre kontroll, högre tillförlitlighet
 - **Configuration**: Dockerfile + Cloud Run configuration
 - **Status**: Redo för implementation
+
+## 🧹 **GCP Resource Cleanup**
+
+### **Problem**
+- **Status**: ✅ **RESOLVED**
+- **Datum**: 2025-09-23
+- **Tid spenderad**: ~1 timme
+
+### **Root Cause Analysis**
+1. **Experimentella Resurser**: Gamla buckets och APIs från tidigare experimentering
+2. **Oavsiktlig API-aktivering**: Compute Engine API aktiverades utan att användas
+3. **Terraform State Mismatch**: State innehöll resurser som inte längre existerade
+
+### **Technical Details**
+```bash
+# Borttagna buckets
+gsutil rm -r gs://igdb-recommendation-system-test
+gsutil rm -r gs://igdb-recommendation-system.appspot.com
+gsutil rm -r gs://igdb-recommendation-system_cloudbuild
+
+# Inaktiverad API
+gcloud services disable compute.googleapis.com
+
+# Terraform state cleanup
+terraform state rm google_storage_bucket.test_bucket
+```
+
+### **Impact**
+- **Kostnadsbesparing**: ~$0.35/månad
+- **Ren Miljö**: Endast aktiva resurser kvar
+- **Terraform State**: Synkroniserat med verklighet
+
+### **Solution**
+- **Systematisk Inventering**: Kontrollerade alla resurser innan rensning
+- **Säker Rensning**: Verifierade att aktiva resurser inte påverkades
+- **Dokumentation**: Uppdaterade alla relevanta dokument
+
+### **Prevention**
+- **Regular Cleanup**: Månatlig review av GCP-resurser
+- **Terraform State**: Regular `terraform state list` för att hålla state synkroniserat
+- **Cost Monitoring**: Aktiva kostnadsövervakning för att upptäcka onödiga resurser
 
 ## 🐳 **Docker Deployment Lessons (ADR-010)**
 
