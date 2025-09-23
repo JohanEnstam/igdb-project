@@ -31,6 +31,10 @@ RUN useradd --create-home --shell /bin/bash app && \
     chown -R app:app /app
 USER app
 
+# Environment variables for GCS integration
+ENV DATA_BUCKET=igdb-recommendation-system-data
+ENV GCS_PREFIX=processed/
+
 # No health check for batch jobs
 
 # Default command
