@@ -18,6 +18,7 @@ Detta är den centrala dokumentationskatalogen för IGDB Game Recommendation Sys
 ### **Deployment & Infrastructure**
 - **[DEPLOYMENT.md](DEPLOYMENT.md)** - Komplett deployment guide med Cloud Run Jobs
 - **[DEPLOYMENT_PLAN.md](DEPLOYMENT_PLAN.md)** - Detaljerad 4-stegs implementation plan med Terraform och Cloud Run
+- **[WEB_APP_DEVELOPMENT_PLAN.md](WEB_APP_DEVELOPMENT_PLAN.md)** - Plan för web-applikation och kontrollpanel utveckling
 - **[DOCKER_SETUP.md](DOCKER_SETUP.md)** - Docker containerization setup
 - **[FRONTEND_ARCHITECTURE.md](FRONTEND_ARCHITECTURE.md)** - Frontend arkitektur och deployment
 - **[CICD_PIPELINE.md](CICD_PIPELINE.md)** - CI/CD pipeline dokumentation

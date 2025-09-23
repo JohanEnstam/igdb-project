@@ -1,5 +1,26 @@
 # Current Project Status - IGDB Game Recommendation System
 
+## 🎯 **Next Phase: Web Application Development with Control Panel**
+
+### **📋 Planned Development**
+- **Status**: 📋 **PLANNED**
+- **Timeline**: 12-18 timmar
+- **Focus**: Användarvänlig sök/rekommendation + Google Auth-skyddad kontrollpanel
+
+#### **Phase Goals:**
+1. **Google Auth Integration**: Skydda admin-funktioner med OAuth2
+2. **Control Panel**: Central hub för att övervaka och hantera systemet
+3. **Scalability Testing**: Validera systemet med 5,000+ spel
+4. **Enhanced UX**: Förbättra användarupplevelsen för sök och rekommendationer
+
+#### **Technical Implementation:**
+- **Backend**: FastAPI med Google OAuth2 och admin endpoints
+- **Frontend**: Next.js admin-sidor i `src/app/admin/`
+- **Monitoring**: GCP Monitoring API integration
+- **Pipeline Management**: Job-triggers från kontrollpanelen
+
+> **📋 Detailed Plan**: Se [WEB_APP_DEVELOPMENT_PLAN.md](WEB_APP_DEVELOPMENT_PLAN.md) för komplett 4-stegs implementation plan.
+
 ## 🎉 **Phase 6 Complete: Full Pipeline Automation with Cloud Run Jobs + Terraform IaC**
 
 ### **What We've Built**
