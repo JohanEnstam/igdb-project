@@ -43,25 +43,28 @@ This document describes the complete CI/CD pipeline for the IGDB Game Recommenda
 **Triggers:** Push to main, Manual workflow dispatch
 
 **Jobs:**
-- **Deploy Staging**: Automatic deployment to staging
-- **Deploy Production**: Manual deployment to production
+- **Deploy Staging**: Automatic deployment to staging ✅
+- **Deploy Production**: Manual deployment to production ✅
+- **Frontend Deployment**: ❌ **NON-FUNCTIONAL** (App Engine issues)
 
 **Steps:**
 1. Checkout code
 2. Set up GCP CLI
-3. Deploy services to Cloud Run
-4. Run integration tests
-5. Notify deployment status
+3. Deploy services to Cloud Run ✅
+4. Run integration tests ✅
+5. Notify deployment status ✅
+6. **Frontend**: App Engine deployment fails ❌
 
 ### **3. Test Pipeline** (`.github/workflows/test.yml`)
 **Triggers:** Push, PR, Daily schedule
 
 **Jobs:**
-- **Unit Tests**: Comprehensive unit testing
-- **Integration Tests**: End-to-end testing
-- **Docker Tests**: Container testing
-- **Performance Tests**: Benchmark testing
-- **Security Tests**: Security scanning
+- **Unit Tests**: Comprehensive unit testing ✅
+- **Integration Tests**: End-to-end testing ✅
+- **Docker Tests**: Container testing ✅
+- **Performance Tests**: Benchmark testing ✅
+- **Security Tests**: Security scanning ✅
+- **Frontend Tests**: ❌ **NEEDS UPDATE** (App Engine deployment issues)
 
 ## 🐳 **Docker Integration**
 
@@ -151,6 +154,21 @@ memory: 4Gi (staging) / 8Gi (production)
 cpu: 4 (staging) / 8 (production)
 max-instances: 3 (staging) / 5 (production)
 ```
+
+## 🚨 **Known Issues**
+
+### **App Engine Frontend Deployment**
+- **Status**: ❌ **NON-FUNCTIONAL**
+- **Error**: `Cannot find module '/workspace/server.js'`
+- **Root Cause**: Next.js standalone output structure incompatible with App Engine expectations
+- **Impact**: Frontend CI/CD pipeline fails
+- **Workaround**: Manual deployment works locally
+- **Solution**: Switch to Cloud Run deployment
+
+### **Frontend CI/CD Status**
+- **Backend CI/CD**: ✅ **WORKING** (Cloud Run deployment)
+- **Frontend CI/CD**: ❌ **BROKEN** (App Engine deployment)
+- **Next Steps**: Implement Cloud Run deployment for frontend
 
 ## 🔐 **Security & Secrets**
 

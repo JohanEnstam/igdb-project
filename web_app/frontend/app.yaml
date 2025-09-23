@@ -15,4 +15,4 @@ handlers:
     script: auto
     secure: always
 
-entrypoint: node Sync/Utveckling/IGDB/web_app/frontend/server.js
+entrypoint: node server.js

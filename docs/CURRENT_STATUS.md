@@ -53,13 +53,13 @@
 - **Responsive Design**: Mobile-first approach with smooth animations
 - **Error Handling**: Graceful error recovery and loading states
 
-#### **✅ Frontend Deployment Ready (Docker + GCP Cloud Run)**
-- **Docker Containerization**: Production-ready Dockerfile with multi-stage build
-- **Next.js Optimization**: Standalone output for optimal Docker performance
-- **Environment Configuration**: Production/development environment variable support
-- **CI/CD Pipeline**: Complete GitHub Actions workflow for automated deployment
-- **Cloud Run Integration**: Ready for deployment to GCP Cloud Run
-- **Local Testing**: Docker build and container testing completed successfully
+#### **⚠️ Frontend Deployment Status (Mixed Results)**
+- **Docker Containerization**: Production-ready Dockerfile with multi-stage build ✅
+- **Next.js Optimization**: Standalone output for optimal Docker performance ✅
+- **Environment Configuration**: Production/development environment variable support ✅
+- **App Engine Deployment**: ❌ **NON-FUNCTIONAL** (server.js not found error)
+- **Cloud Run Alternative**: Ready for deployment to GCP Cloud Run ✅
+- **Local Testing**: Docker build and container testing completed successfully ✅
 
 #### **✅ Technical Achievements**
 - **Performance**: <0.5s training on 1230 games
@@ -291,19 +291,27 @@ Based on our complete professional foundation, I recommend:
 4. Test end-to-end user experience
 5. Deploy full stack to production
 
-**Frontend MVP Complete!** Now ready for:
-- **App Engine Deployment**: Next.js frontend to GCP App Engine
-- **Production Deployment**: Complete system ready for deployment
+**Frontend MVP Complete!** Current status:
+- **App Engine Deployment**: ❌ **BROKEN** (server.js not found error)
+- **Cloud Run Deployment**: ✅ **READY** (Docker containerization complete)
+- **Production Deployment**: ⚠️ **PARTIAL** (Backend ready, Frontend needs Cloud Run)
 - **Monitoring**: Professional observability and analytics
 - **Scaling**: More games for better recommendations
 - **Enhancements**: Additional features and improvements
 
 ## Recent Lessons Learned
 
+### **App Engine Deployment Failure (ADR-011)**
+- **Issue**: App Engine deployment fails with "server.js not found" error
+- **Root Cause**: Next.js standalone output structure incompatible with App Engine expectations
+- **Status**: ❌ **NON-FUNCTIONAL** - Frontend cannot be deployed via GitHub Actions
+- **Solution**: Switch to Cloud Run deployment for frontend
+- **Prevention**: Test deployment strategies thoroughly before committing
+
 ### **Docker Deployment Challenges (ADR-010)**
 - **Issue**: Prolonged Docker deployment debugging (4+ hours)
 - **Root Cause**: Docker build context problems in CI/CD
-- **Solution**: Switched to GCP App Engine for frontend deployment
+- **Solution**: Switched to GCP App Engine for frontend deployment (now failed)
 - **Prevention**: Always start with simplest solution (native runtimes vs containers)
 
 ### **Production Deployment Ready**
@@ -316,11 +324,11 @@ Based on our complete professional foundation, I recommend:
 - ✅ **Security**: Zero vulnerabilities, professional architecture
 
 **Deployment Strategy:**
-- **Frontend**: GCP Cloud Run (Docker containerized, CI/CD ready)
-- **Backend**: Google Cloud Run (already configured)
-- **Data**: Cloud Storage (already integrated)
+- **Frontend**: ⚠️ **NEEDS UPDATE** (App Engine broken, switch to Cloud Run)
+- **Backend**: ✅ Google Cloud Run (already configured and working)
+- **Data**: ✅ Cloud Storage (already integrated)
 - **Domain**: Custom domain setup via Cloud Load Balancer
 - **Monitoring**: Application performance monitoring
-- **CI/CD**: Complete GitHub Actions workflows for both frontend and backend
+- **CI/CD**: ⚠️ **PARTIAL** (Backend working, Frontend needs Cloud Run workflow)
 
-**Ready for production deployment!** 🚀
+**Status: Backend ready, Frontend needs Cloud Run deployment!** 🚀

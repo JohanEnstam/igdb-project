@@ -40,8 +40,15 @@ Each ADR follows this structure:
 - [ADR-007: ML Pipeline Implementation](007-ml-pipeline-implementation.md)
 - [ADR-008: Option B Lite Implementation](008-option-b-lite-implementation.md)
 - [ADR-009: Frontend Scalability Strategy](009-frontend-scalability-strategy.md)
-- [ADR-010: Docker Deployment Lessons](010-docker-deployment-lessons.md)
-- [ADR-011: App Engine Frontend Deployment](011-app-engine-frontend-deployment.md)
+- [ADR-010: Docker Deployment Lessons](010-docker-deployment-lessons.md) - **Superseded** by Cloud Run approach
+- [ADR-011: App Engine Frontend Deployment](011-app-engine-frontend-deployment.md) - **Failed** (server.js not found)
+
+## Related Documentation
+
+- **[DEPLOYMENT.md](../DEPLOYMENT.md)** - Consolidated deployment guide
+- **[LESSONS_LEARNED.md](../LESSONS_LEARNED.md)** - Centralized knowledge base
+- **[CURRENT_STATUS.md](../CURRENT_STATUS.md)** - Current project status
+- **[GCP_CURRENT_STATE.md](../GCP_CURRENT_STATE.md)** - GCP environment status
 
 ## Adding New ADRs
 

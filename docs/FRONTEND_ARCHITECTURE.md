@@ -306,16 +306,20 @@ interface GameRecommendation {
 - **Asset optimization**: Image and static asset optimization
 
 ### Deployment Targets
-- **GCP App Engine**: Primary deployment platform (Native Node.js runtime)
-- **Configuration**: app.yaml-based deployment
+- **GCP App Engine**: ❌ **NON-FUNCTIONAL** (server.js not found error)
+- **GCP Cloud Run**: ✅ **RECOMMENDED** (Docker containerization)
+- **Vercel/Netlify**: ✅ **ALTERNATIVE** (Native Next.js hosting)
+- **Configuration**: Docker-based deployment for Cloud Run
 - **CI/CD**: GitHub Actions with automated deployments
 - **Scaling**: Automatic scaling (0-10 instances)
 
-### Deployment Strategy (ADR-011)
-- **Approach**: Native Node.js runtime instead of Docker containers
-- **Benefits**: Simplified deployment, faster builds, higher reliability
-- **Configuration**: Single app.yaml file vs complex Docker setup
-- **Performance**: No container overhead, better resource utilization
+### Deployment Strategy (Updated)
+- **Current Status**: App Engine deployment failed (server.js not found)
+- **Recommended Approach**: Cloud Run with Docker containers
+- **Benefits**: Proven Docker setup, better control, higher reliability
+- **Configuration**: Dockerfile + Cloud Run configuration
+- **Performance**: Container overhead minimal, better resource utilization
+- **Alternative**: Vercel/Netlify for native Next.js hosting
 
 ## Monitoring
 
@@ -345,6 +349,18 @@ interface GameRecommendation {
 - **Offline support**: PWA capabilities
 - **Advanced analytics**: User behavior insights
 
+## Known Issues
+
+### App Engine Deployment Problem
+- **Status**: ❌ **NON-FUNCTIONAL**
+- **Error**: `Cannot find module '/workspace/server.js'`
+- **Root Cause**: Next.js standalone output structure incompatible with App Engine expectations
+- **Impact**: Frontend cannot be deployed via GitHub Actions
+- **Workaround**: Manual deployment works locally
+- **Solution**: Switch to Cloud Run deployment
+
 ## Conclusion
 
 This frontend architecture provides a solid foundation for the IGDB Game Recommendation System, with clear scalability paths and modern development practices. The focus on user experience, performance, and accessibility ensures a high-quality application that can grow with our needs.
+
+**Note**: App Engine deployment is currently non-functional. Cloud Run deployment is recommended as the primary deployment strategy.
