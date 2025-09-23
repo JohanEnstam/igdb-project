@@ -1,7 +1,7 @@
 # Deployment Guide - IGDB Game Recommendation System
 
 **Datum:** 2025-09-23  
-**Status:** ✅ Backend Working, ✅ Frontend Working, ✅ Pipeline Working  
+**Status:** ✅ Backend Working, ✅ Frontend Working, ✅ Pipeline Working, ✅ CI/CD Complete  
 **Senast uppdaterad:** 2025-09-23
 
 ## 🎯 **Översikt**
@@ -198,15 +198,53 @@ gcloud app deploy app.yaml
 
 ### **Staging Environment**
 - **Backend**: `igdb-api-staging-d6xpjrmqsa-ew.a.run.app`
-- **Frontend**: Not deployed (App Engine broken)
+- **Frontend**: `igdb-frontend-d6xpjrmqsa-ew.a.run.app` ✅ **WORKING**
 - **Trigger**: Automatic on main branch push
 - **Resources**: Lower resource limits
 
 ### **Production Environment**
 - **Backend**: Ready for production deployment
-- **Frontend**: Needs Cloud Run implementation
-- **Trigger**: Manual workflow dispatch
+- **Frontend**: ✅ **WORKING** - Cloud Run deployment via GitHub Actions
+- **Trigger**: Automatic on main branch push (frontend), Manual (backend)
 - **Resources**: Higher resource limits
+
+## 🔄 **CI/CD och Monitoring**
+
+**Status:** ✅ Complete  
+**Last Updated:** 2025-09-23  
+**Next Review:** 2025-09-30  
+**Description:** Komplett CI/CD pipeline med automatisk frontend-deployment, monitoring och alerting implementerat.  
+**Referenser:** [CICD_PIPELINE.md](CICD_PIPELINE.md), [LESSONS_LEARNED.md](LESSONS_LEARNED.md)
+
+### **GitHub Actions Workflows**
+- **Frontend Deployment** (`deploy-frontend.yml`): ✅ **WORKING**
+  - Automatisk deployment till Cloud Run på push till `main`
+  - Terraform-integration för infrastructure management
+  - Docker build och push till Artifact Registry
+  - Pipeline job-verifiering efter deployment
+- **Backend CI/CD** (`ci.yml`, `deploy.yml`): ✅ **WORKING**
+  - Automatisk testing, building och deployment
+  - Security scanning med Bandit och Safety
+  - Multi-environment support (staging/production)
+
+### **Monitoring och Alerting**
+- **Error Alerts**: ✅ **ACTIVE**
+  - Frontend Error Alert (5xx responses)
+  - API Error Alert (5xx responses)  
+  - Pipeline Job Failure Alert
+- **Latency Alert**: ✅ **PREPARED** (aktiveras när service får trafik)
+- **Notification Channels**: Tomma (kan utökas med email/Slack)
+- **Terraform Management**: Alla alerts hanterade som Infrastructure as Code
+
+### **Security Scanning**
+- **CI/CD Integration**: Bandit och Safety-scanning i alla workflows
+- **Artifact Upload**: Säkerhetsrapporter sparas som GitHub artifacts
+- **Frontend Scanning**: Säkerhetsscanning för Node.js-dependencies
+
+### **Pipeline Verification**
+- **Job Execution**: Automatisk test av `igdb-ingestion` job efter deployment
+- **Log Access**: Korrekt gcloud CLI syntax för Cloud Run Jobs logs
+- **Status Monitoring**: Verifiering av job completion och execution status
 
 ## 🔐 **Security & Secrets**
 
@@ -234,17 +272,26 @@ gcloud app deploy app.yaml
 
 ## 🎯 **Next Steps**
 
-### **Immediate Actions**
-1. **Execute Step 2**: Migrate Frontend to Cloud Run (4-6 hours)
-2. **Execute Step 3**: Backend Improvements and Full Pipeline (6-8 hours)
-3. **Execute Step 4**: CI/CD Integration and Monitoring (4-6 hours)
-4. **Follow DEPLOYMENT_PLAN.md**: Detailed implementation guide available
+### **Completed Actions** ✅
+1. **Step 1**: Terraform Setup and Infrastructure ✅ **COMPLETE**
+2. **Step 2**: Frontend Migration to Cloud Run ✅ **COMPLETE**
+3. **Step 3**: Backend Improvements and Full Pipeline ✅ **COMPLETE**
+4. **Step 4**: CI/CD Integration and Monitoring ✅ **COMPLETE**
 
-### **Long-term Improvements**
-1. **Monitoring**: Implement proper monitoring and alerting
-2. **Automation**: Automatic rollbacks on deployment failures
-3. **Testing**: Comprehensive deployment testing
-4. **Cost Optimization**: Regular cleanup of unnecessary resources
+### **Optional Improvements**
+1. **Monitoring Enhancement**: 
+   - Aktivera latency alert när frontend får trafik
+   - Lägg till email/Slack notification channels
+   - Skapa Cloud Monitoring dashboard
+2. **Cost Optimization**: 
+   - Implementera budget alerts
+   - Regular cleanup av gamla Docker images
+3. **Advanced CI/CD**: 
+   - Blue-green deployments för zero-downtime
+   - Automatic rollbacks på deployment failures
+4. **Testing Enhancement**: 
+   - Comprehensive deployment testing
+   - Integration tests för pipeline jobs
 
 ## 📚 **References**
 

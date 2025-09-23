@@ -1,8 +1,9 @@
 # CI/CD Pipeline Documentation
 
-## 🎯 **Overview**
-
-This document describes the complete CI/CD pipeline for the IGDB Game Recommendation System, including GitHub Actions workflows, automated testing, and GCP deployment.
+**Status:** ✅ Complete  
+**Last Updated:** 2025-09-23  
+**Next Review:** 2025-09-30  
+**Description:** Komplett CI/CD pipeline med automatisk frontend-deployment, monitoring och alerting implementerat.
 
 ## 🏗️ **Pipeline Architecture**
 
@@ -45,7 +46,7 @@ This document describes the complete CI/CD pipeline for the IGDB Game Recommenda
 **Jobs:**
 - **Deploy Staging**: Automatic deployment to staging ✅
 - **Deploy Production**: Manual deployment to production ✅
-- **Frontend Deployment**: ❌ **NON-FUNCTIONAL** (App Engine issues)
+- **Frontend Deployment**: ✅ **WORKING** (Cloud Run via separate workflow)
 
 **Steps:**
 1. Checkout code
@@ -53,9 +54,28 @@ This document describes the complete CI/CD pipeline for the IGDB Game Recommenda
 3. Deploy services to Cloud Run ✅
 4. Run integration tests ✅
 5. Notify deployment status ✅
-6. **Frontend**: App Engine deployment fails ❌
+6. **Frontend**: Cloud Run deployment via `deploy-frontend.yml` ✅
 
-### **3. Test Pipeline** (`.github/workflows/test.yml`)
+### **3. Frontend Deployment Pipeline** (`.github/workflows/deploy-frontend.yml`)
+**Triggers:** Push to main (frontend changes), Manual workflow dispatch
+
+**Jobs:**
+- **Deploy Frontend**: Automatic deployment to Cloud Run ✅
+- **Terraform Integration**: Infrastructure as Code management ✅
+- **Pipeline Verification**: Job execution testing ✅
+
+**Steps:**
+1. Checkout code
+2. Authenticate to Google Cloud
+3. Configure Docker for Artifact Registry
+4. Set up Terraform
+5. Build and push Docker image
+6. Apply Terraform changes
+7. Verify deployment
+8. Test pipeline jobs
+9. Run security scans
+
+### **4. Test Pipeline** (`.github/workflows/test.yml`)
 **Triggers:** Push, PR, Daily schedule
 
 **Jobs:**
@@ -64,7 +84,7 @@ This document describes the complete CI/CD pipeline for the IGDB Game Recommenda
 - **Docker Tests**: Container testing ✅
 - **Performance Tests**: Benchmark testing ✅
 - **Security Tests**: Security scanning ✅
-- **Frontend Tests**: ❌ **NEEDS UPDATE** (App Engine deployment issues)
+- **Frontend Tests**: ✅ **WORKING** (Cloud Run deployment)
 
 ## 🐳 **Docker Integration**
 
@@ -230,6 +250,26 @@ pytest tests/performance/
 # Run linting
 make lint
 ```
+
+## 📊 **Monitoring och Alerting**
+
+### **Cloud Monitoring Integration**
+- **Error Alerts**: ✅ **ACTIVE**
+  - Frontend Error Alert (5xx responses)
+  - API Error Alert (5xx responses)
+  - Pipeline Job Failure Alert
+- **Latency Alert**: ✅ **PREPARED** (aktiveras när service får trafik)
+- **Terraform Management**: Alla alerts hanterade som Infrastructure as Code
+
+### **Log Management**
+- **Cloud Run Jobs Logs**: Korrekt gcloud CLI syntax implementerad
+- **Execution Monitoring**: Automatisk verifiering av job completion
+- **Log Filtering**: Resource-baserad filtrering för effektiv log-sökning
+
+### **Security Monitoring**
+- **CI/CD Security Scanning**: Bandit och Safety-integration
+- **Artifact Upload**: Säkerhetsrapporter sparas som GitHub artifacts
+- **Vulnerability Tracking**: Automatisk scanning i alla workflows
 
 ## 🐛 **Troubleshooting**
 

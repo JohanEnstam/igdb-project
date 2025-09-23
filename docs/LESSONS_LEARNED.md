@@ -207,20 +207,76 @@ terraform state rm google_storage_bucket.test_bucket
 3. **Set Time Limits**: Max 1 timme debugging per issue
 4. **Plan Rollbacks**: Ha fallback-planer redo från start
 
+## 🔄 **Steg 4: CI/CD Integration och Monitoring**
+
+### **Problem**
+- **Status**: ✅ **RESOLVED**
+- **Datum**: 2025-09-23
+- **Tid spenderad**: ~3 timmar
+- **Beskrivning**: Implementera komplett CI/CD pipeline med automatisk frontend-deployment, monitoring och alerting
+
+### **Implementation Details**
+1. **GitHub Actions Frontend Workflow**: 
+   - Skapad `deploy-frontend.yml` för automatisk Cloud Run deployment
+   - Terraform-integration för Infrastructure as Code
+   - Docker build och push till Artifact Registry
+   - Pipeline job-verifiering efter deployment
+
+2. **Monitoring och Alerting**:
+   - Error alerts för frontend, API och pipeline jobs
+   - Latency alert förberedd (aktiveras när service får trafik)
+   - Alla alerts hanterade via Terraform
+
+3. **Security Scanning**:
+   - Bandit och Safety-integration i CI/CD
+   - Säkerhetsrapporter sparas som GitHub artifacts
+   - Frontend-säkerhetsscanning implementerad
+
+4. **gcloud CLI Syntax Fixes**:
+   - Korrekt syntax för Cloud Run Jobs logs
+   - Job execution monitoring implementerad
+   - Log filtering med resource-baserad sökning
+
+### **Technical Challenges**
+1. **Latency Metric Availability**: 
+   - Problem: `run.googleapis.com/request/latencies` metric inte tillgänglig
+   - Solution: Kommenterad tills service får trafik, korrekt syntax förberedd
+2. **gcloud CLI Commands**: 
+   - Problem: Felaktiga kommandon för Cloud Run v2
+   - Solution: Använd `alpha`-flaggan och korrekt resource-filtering
+
+### **Success Criteria Met**
+- ✅ GitHub Actions för frontend deployment fungerar
+- ✅ Monitoring och alerting implementerat
+- ✅ Säkerhetsscanning integrerad
+- ✅ Pipeline-stabilitet verifierad
+- ✅ Dokumentation uppdaterad
+
+### **Prevention Strategies**
+1. **Test CLI Commands Locally**: Verifiera gcloud syntax innan implementation
+2. **Prepare for Metric Delays**: Metrics kan ta tid att bli tillgängliga
+3. **Document CLI Syntax**: Behåll korrekt syntax för framtida referens
+4. **Incremental Implementation**: Implementera alerts stegvis
+
 ## 🎯 **Next Steps**
 
-### **Immediate Actions**
-1. **Execute Step 1**: Setup Terraform Environment (2-4 hours)
-2. **Execute Step 2**: Migrate Frontend to Cloud Run (4-6 hours)
-3. **Execute Step 3**: Backend Improvements and Full Pipeline (6-8 hours)
-4. **Execute Step 4**: CI/CD Integration and Monitoring (4-6 hours)
+### **Completed Actions** ✅
+1. **Step 1**: Setup Terraform Environment ✅ **COMPLETE**
+2. **Step 2**: Migrate Frontend to Cloud Run ✅ **COMPLETE**
+3. **Step 3**: Backend Improvements and Full Pipeline ✅ **COMPLETE**
+4. **Step 4**: CI/CD Integration and Monitoring ✅ **COMPLETE**
 
-### **Long-term Improvements**
-1. **Monitoring**: Implement proper monitoring och alerting
-2. **Automation**: Automatiska rollbacks vid deployment failures
-3. **Testing**: Comprehensive deployment testing
-4. **Documentation**: Regular documentation reviews
-5. **Hybrid Evaluation**: Utvärdera hybrid-lösning efter 3 månader
+### **Optional Improvements**
+1. **Monitoring Enhancement**: 
+   - Aktivera latency alert när frontend får trafik
+   - Lägg till email/Slack notification channels
+   - Skapa Cloud Monitoring dashboard
+2. **Advanced CI/CD**: 
+   - Blue-green deployments för zero-downtime
+   - Automatic rollbacks på deployment failures
+3. **Testing Enhancement**: 
+   - Comprehensive deployment testing
+   - Integration tests för pipeline jobs
 
 ## 📋 **Checklist for Future Deployments**
 
