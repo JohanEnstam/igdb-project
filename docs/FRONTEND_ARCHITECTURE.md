@@ -306,18 +306,20 @@ interface GameRecommendation {
 - **Asset optimization**: Image and static asset optimization
 
 ### Deployment Targets
-- **GCP App Engine**: ❌ **NON-FUNCTIONAL** (server.js not found error)
-- **GCP Cloud Run**: ✅ **RECOMMENDED** (Docker containerization)
-- **Vercel/Netlify**: ✅ **ALTERNATIVE** (Native Next.js hosting)
-- **Configuration**: Docker-based deployment for Cloud Run
-- **CI/CD**: GitHub Actions with automated deployments
+- **GCP Cloud Run**: ✅ **ACTIVE** (Docker containerization)
+- **URL**: https://igdb-frontend-d6xpjrmqsa-ew.a.run.app
+- **Docker Image**: `europe-west1-docker.pkg.dev/igdb-recommendation-system/igdb-repo/igdb-frontend:latest`
+- **Configuration**: Multi-stage Dockerfile with Next.js standalone output
+- **CI/CD**: Terraform-based infrastructure management
 - **Scaling**: Automatic scaling (0-10 instances)
+- **Vercel/Netlify**: ✅ **ALTERNATIVE** (Native Next.js hosting)
 
 ### Deployment Strategy (Updated)
-- **Current Status**: App Engine deployment failed (server.js not found)
-- **Recommended Approach**: Cloud Run with Docker containers
+- **Current Status**: ✅ **WORKING** (Cloud Run deployment successful)
+- **Active Approach**: Cloud Run with Docker containers
 - **Benefits**: Proven Docker setup, better control, higher reliability
-- **Configuration**: Dockerfile + Cloud Run configuration
+- **Configuration**: Multi-stage Dockerfile + Terraform infrastructure
+- **Infrastructure**: Managed via Terraform IaC
 - **Performance**: Container overhead minimal, better resource utilization
 - **Alternative**: Vercel/Netlify for native Next.js hosting
 
@@ -351,16 +353,15 @@ interface GameRecommendation {
 
 ## Known Issues
 
-### App Engine Deployment Problem
-- **Status**: ❌ **NON-FUNCTIONAL**
-- **Error**: `Cannot find module '/workspace/server.js'`
+### App Engine Deployment Problem (Resolved)
+- **Status**: ✅ **RESOLVED** (Migrated to Cloud Run)
+- **Previous Error**: `Cannot find module '/workspace/server.js'`
 - **Root Cause**: Next.js standalone output structure incompatible with App Engine expectations
-- **Impact**: Frontend cannot be deployed via GitHub Actions
-- **Workaround**: Manual deployment works locally
-- **Solution**: Switch to Cloud Run deployment
+- **Solution**: Migrated to Cloud Run with multi-stage Docker build
+- **Current Status**: Frontend successfully deployed and functional
 
 ## Conclusion
 
 This frontend architecture provides a solid foundation for the IGDB Game Recommendation System, with clear scalability paths and modern development practices. The focus on user experience, performance, and accessibility ensures a high-quality application that can grow with our needs.
 
-**Note**: App Engine deployment is currently non-functional. Cloud Run deployment is recommended as the primary deployment strategy.
+**Note**: Frontend is now successfully deployed on Cloud Run at https://igdb-frontend-d6xpjrmqsa-ew.a.run.app with Terraform-managed infrastructure.
