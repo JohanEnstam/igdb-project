@@ -21,7 +21,7 @@ on:
 
 env:
   PYTHON_VERSION: '3.11'
-  REGISTRY: gcr.io
+  REGISTRY: europe-west1-docker.pkg.dev/igdb-recommendation-system/igdb-repo
   PROJECT_ID: igdb-recommendation-system
 
 jobs:
@@ -55,7 +55,7 @@ jobs:
 
       - name: Run linting
         run: |
-          pip install flake8 black
+          pip install flake8 black==25.1.0
           flake8 data_pipeline/ --count --select=E9,F63,F7,F82 --show-source --statistics
           black --check data_pipeline/
 

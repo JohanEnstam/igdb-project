@@ -25,7 +25,7 @@ on:
 env:
   PROJECT_ID: igdb-recommendation-system
   REGION: europe-west1
-  REGISTRY: gcr.io
+  REGISTRY: europe-west1-docker.pkg.dev/igdb-recommendation-system/igdb-repo
 
 jobs:
   # Deploy to staging
