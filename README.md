@@ -2,6 +2,12 @@
 
 Ett komplett system för att samla speldata från externa API:er, träna ML-modeller och servera spelrekommendationer via en web-applikation.
 
+## 🚀 **Live Demo**
+
+- **Frontend**: https://igdb-frontend.vercel.app
+- **Admin Panel**: https://igdb-frontend.vercel.app/admin
+- **Backend API**: https://igdb-api-d6xpjrmqsa-ew.a.run.app
+
 ## Arkitektur
 
 Projektet är uppdelat i två huvudsakliga pipelines:
@@ -23,18 +29,19 @@ Projektet är uppdelat i två huvudsakliga pipelines:
 
 ```text
 igdb-project/
-├── data-pipeline/          # Fabriks-pipeline
+├── data_pipeline/          # Fabriks-pipeline
 │   ├── ingestion/         # API data collection
 │   ├── processing/        # Data cleaning & transformation
 │   ├── training/          # ML model training
 │   └── deployment/        # Model serving setup
-├── web-app/               # Butiks-pipeline
+├── web_app/               # Butiks-pipeline
 │   ├── api/              # Backend API
-│   ├── frontend/         # User interface
-│   └── deployment/       # App deployment
+│   └── frontend/         # User interface (Vercel)
 ├── shared/               # Delad kod (utils, configs)
 ├── infrastructure/       # Terraform/Pulumi för GCP
-└── docs/                # Dokumentation
+├── docs/                # Dokumentation
+├── models/              # ML model files
+└── data/                # Local data storage
 ```
 
 ## Teknisk Stack
@@ -42,7 +49,9 @@ igdb-project/
 - **Cloud**: Google Cloud Platform (GCP)
 - **Data Pipeline**: Python, SQLite, Cloud Storage
 - **ML**: scikit-learn, TF-IDF vectorization, content-based filtering
-- **Web App**: FastAPI (backend), React/Vue (frontend - coming next)
+- **Web App**: FastAPI (backend), Next.js (frontend)
+- **Frontend Deployment**: Vercel
+- **Backend Deployment**: Google Cloud Run
 - **Infrastructure**: Docker, GitHub Actions, Cloud Run
 - **CI/CD**: GitHub Actions (CI ✓, CD ✓, Test ✓)
 - **Security**: Bandit, Safety, pre-commit hooks
