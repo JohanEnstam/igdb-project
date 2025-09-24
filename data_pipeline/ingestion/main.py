@@ -260,24 +260,24 @@ class IGDBDataIngestion:
             json.dump(data, f, indent=2, ensure_ascii=False)
 
         print(f"💾 Saved {len(data)} records to {filepath}")
-        
+
         # Upload to GCS if configured
         bucket_name = os.getenv("DATA_BUCKET")
         gcs_prefix = os.getenv("GCS_PREFIX", "raw/")
-        
+
         if bucket_name:
             try:
                 client = storage.Client()
                 bucket = client.bucket(bucket_name)
                 blob_name = f"{gcs_prefix}{filename}"
                 blob = bucket.blob(blob_name)
-                
+
                 blob.upload_from_filename(filepath)
                 print(f"☁️ Uploaded {filename} to gs://{bucket_name}/{blob_name}")
-                
+
             except Exception as e:
                 logger.warning(f"⚠️ Failed to upload to GCS: {e}")
-                print(f"⚠️ Continuing without GCS upload...")
+                print("⚠️ Continuing without GCS upload...")
 
 
 def create_mock_data() -> List[Dict[str, Any]]:

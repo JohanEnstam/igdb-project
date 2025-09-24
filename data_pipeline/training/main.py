@@ -152,32 +152,40 @@ class MLTrainingService:
         logger.info(f"Saving trained model to {model_path}")
         self.recommendation_model.save_model(model_path)
         logger.info("Model saved successfully")
-        
+
         # Upload to GCS if configured
         bucket_name = os.getenv("MODEL_BUCKET")
-        
+
         if bucket_name:
             try:
                 client = storage.Client()
                 bucket = client.bucket(bucket_name)
-                
+
                 # Upload model file
                 model_blob_name = f"models/{os.path.basename(model_path)}"
                 model_blob = bucket.blob(model_blob_name)
                 model_blob.upload_from_filename(model_path)
-                logger.info(f"☁️ Uploaded model to gs://{bucket_name}/{model_blob_name}")
-                
+                logger.info(
+                    f"☁️ Uploaded model to gs://{bucket_name}/{model_blob_name}"
+                )
+
                 # Upload feature extractor if it exists
-                feature_extractor_path = model_path.replace(".pkl", "_feature_extractor.pkl")
+                feature_extractor_path = model_path.replace(
+                    ".pkl", "_feature_extractor.pkl"
+                )
                 if os.path.exists(feature_extractor_path):
-                    feature_blob_name = f"models/{os.path.basename(feature_extractor_path)}"
+                    feature_blob_name = (
+                        f"models/{os.path.basename(feature_extractor_path)}"
+                    )
                     feature_blob = bucket.blob(feature_blob_name)
                     feature_blob.upload_from_filename(feature_extractor_path)
-                    logger.info(f"☁️ Uploaded feature extractor to gs://{bucket_name}/{feature_blob_name}")
-                
+                    logger.info(
+                        f"☁️ Uploaded feature extractor to gs://{bucket_name}/{feature_blob_name}"
+                    )
+
             except Exception as e:
                 logger.warning(f"⚠️ Failed to upload model to GCS: {e}")
-                print(f"⚠️ Continuing without GCS upload...")
+                print("⚠️ Continuing without GCS upload...")
 
     def run(self, data_path: str, model_path: str = None):
         """

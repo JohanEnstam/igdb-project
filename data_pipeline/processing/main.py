@@ -97,31 +97,31 @@ def save_transformed_data(clean_games: List[Dict[str, Any]]) -> None:
     df.to_csv(csv_path, index=False)
 
     logger.info(f"💾 Saved {len(clean_games)} clean games to {csv_path}")
-    
+
     # Upload to GCS if configured
     bucket_name = os.getenv("DATA_BUCKET")
     gcs_prefix = os.getenv("GCS_PREFIX", "processed/")
-    
+
     if bucket_name:
         try:
             client = storage.Client()
             bucket = client.bucket(bucket_name)
-            
+
             # Upload JSON
             json_blob_name = f"{gcs_prefix}games_clean.json"
             json_blob = bucket.blob(json_blob_name)
             json_blob.upload_from_filename(json_path)
             logger.info(f"☁️ Uploaded JSON to gs://{bucket_name}/{json_blob_name}")
-            
+
             # Upload CSV
             csv_blob_name = f"{gcs_prefix}games_clean.csv"
             csv_blob = bucket.blob(csv_blob_name)
             csv_blob.upload_from_filename(csv_path)
             logger.info(f"☁️ Uploaded CSV to gs://{bucket_name}/{csv_blob_name}")
-            
+
         except Exception as e:
             logger.warning(f"⚠️ Failed to upload to GCS: {e}")
-            print(f"⚠️ Continuing without GCS upload...")
+            print("⚠️ Continuing without GCS upload...")
 
 
 def generate_quality_report(db_path: str = "data/games.db") -> None:
