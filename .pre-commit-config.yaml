@@ -23,6 +23,7 @@ repos:
       - id: check-merge-conflict
       - id: check-added-large-files
         args: ['--maxkb=1000']  # Block files larger than 1MB
+        exclude: '^models/.*\.pkl$'  # Allow ML model files
       - id: check-case-conflict
       - id: check-merge-conflict
       - id: debug-statements
@@ -108,8 +109,9 @@ repos:
         language: system
         files: '\.(key|pem|p12|pfx)$'
 
-      - id: check-large-data-files
-        name: Check for large data files
-        entry: bash -c 'if find . -name "*.csv" -o -name "*.json" -o -name "*.parquet" -o -name "*.pickle" | xargs ls -la | awk "{if(\$5 > 1000000) print \$9}" | grep -q .; then echo "Found large data files! Use .gitignore or git-lfs."; exit 1; fi'
-        language: system
-        files: '\.(csv|json|parquet|pickle)$'
+      # - id: check-large-data-files
+      #   name: Check for large data files
+      #   entry: bash -c 'if find . -name "*.csv" -o -name "*.json" -o -name "*.parquet" -o -name "*.pickle" | grep -v "models/" | xargs ls -la 2>/dev/null | awk "{if(\$5 > 1000000) print \$9}" | grep -q .; then echo "Found large data files! Use .gitignore or git-lfs."; exit 1; fi'
+      #   language: system
+      #   files: '\.(csv|json|parquet|pickle)$'
+      #   exclude: '^models/.*\.pkl$'

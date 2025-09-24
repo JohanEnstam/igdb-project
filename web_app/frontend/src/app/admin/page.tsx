@@ -42,9 +42,12 @@ export default function AdminDashboard() {
       if (response.status === 200) {
         setStatus(response.data);
       }
-    } catch (err: any) {
+    } catch (err: unknown) {
       console.error("Failed to fetch status:", err);
-      setError(err.response?.data?.detail || "Failed to fetch system status");
+      const errorMessage = err instanceof Error && 'response' in err
+        ? (err as { response?: { data?: { detail?: string } } }).response?.data?.detail || "Failed to fetch system status"
+        : "Failed to fetch system status";
+      setError(errorMessage);
     } finally {
       setIsLoading(false);
     }

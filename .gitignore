@@ -62,20 +62,24 @@ logs/
 data/
 datasets/
 
-# JSON files (but allow package.json)
+# JSON files (but allow frontend config files)
 *.json
-!package.json
-!package-lock.json
-!tsconfig.json
-!next.config.ts
-!components.json
+!web_app/frontend/package.json
+!web_app/frontend/package-lock.json
+!web_app/frontend/tsconfig.json
+!web_app/frontend/next.config.ts
+!web_app/frontend/components.json
+!web_app/frontend/eslint.config.mjs
+!vercel.json
 
-# Model files
+# Model files (but allow specific model files)
 *.model
 *.joblib
 *.h5
 *.pkl
-models/
+!models/recommendation_model.pkl
+!models/recommendation_model_feature_extractor.pkl
+!models/test_model_feature_extractor.pkl
 
 # Jupyter Notebooks
 .ipynb_checkpoints
@@ -88,12 +92,20 @@ models/
 
 # Node.js (for frontend)
 node_modules/
+!web_app/frontend/node_modules/
 npm-debug.log*
 yarn-debug.log*
 yarn-error.log*
 
+# Next.js
+.next/
+out/
+build/
+!web_app/frontend/.next/
+!web_app/frontend/out/
+!web_app/frontend/build/
+
 # GCP credentials
-*.json
 service-account*.json
 gcp-credentials/
 

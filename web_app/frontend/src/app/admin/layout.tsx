@@ -1,7 +1,5 @@
 "use client";
 
-import { GoogleOAuthProvider } from "@react-oauth/google";
-import { useGoogleLogin } from "@react-oauth/google";
 import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
 import axios from "axios";
@@ -10,11 +8,16 @@ interface AdminLayoutProps {
   children: React.ReactNode;
 }
 
+interface User {
+  email: string;
+  name: string;
+  picture?: string;
+}
+
 export default function AdminLayout({ children }: AdminLayoutProps) {
   const [isAuthenticated, setIsAuthenticated] = useState(false);
   const [isLoading, setIsLoading] = useState(true);
-  const [user, setUser] = useState<any>(null);
-  const [error, setError] = useState<string | null>(null);
+  const [user, setUser] = useState<User | null>(null);
   const router = useRouter();
 
   // Google OAuth login - redirect to backend OAuth flow
@@ -32,7 +35,6 @@ export default function AdminLayout({ children }: AdminLayoutProps) {
         const errorParam = urlParams.get("error");
 
         if (errorParam) {
-          setError("Authentication failed. Please try again.");
           // Clear the error parameter from URL
           window.history.replaceState({}, document.title, window.location.pathname);
         }
@@ -44,9 +46,8 @@ export default function AdminLayout({ children }: AdminLayoutProps) {
         if (response.status === 200) {
           setIsAuthenticated(true);
           setUser(response.data.user);
-          setError(null);
         }
-      } catch (error) {
+      } catch {
         // Not authenticated, show login
         setIsAuthenticated(false);
       } finally {
@@ -80,27 +81,10 @@ export default function AdminLayout({ children }: AdminLayoutProps) {
             </p>
           </div>
 
-          {error && (
-            <div className="bg-red-50 border border-red-200 rounded-md p-4">
-              <div className="flex">
-                <div className="flex-shrink-0">
-                  <svg className="h-5 w-5 text-red-400" viewBox="0 0 20 20" fill="currentColor">
-                    <path fillRule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zM8.707 7.293a1 1 0 00-1.414 1.414L8.586 10l-1.293 1.293a1 1 0 101.414 1.414L10 11.414l1.293 1.293a1 1 0 001.414-1.414L11.414 10l1.293-1.293a1 1 0 00-1.414-1.414L10 8.586 8.707 7.293z" clipRule="evenodd" />
-                  </svg>
-                </div>
-                <div className="ml-3">
-                  <p className="text-sm text-red-800">{error}</p>
-                </div>
-              </div>
-            </div>
-          )}
 
           <div className="mt-8">
             <button
-              onClick={() => {
-                setError(null);
-                login();
-              }}
+              onClick={login}
               className="group relative w-full flex justify-center py-3 px-4 border border-transparent text-sm font-medium rounded-md text-white bg-blue-600 hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 transition-colors"
             >
               <svg className="w-5 h-5 mr-2" viewBox="0 0 24 24">
@@ -161,7 +145,6 @@ export default function AdminLayout({ children }: AdminLayoutProps) {
                     // Clear local state
                     setIsAuthenticated(false);
                     setUser(null);
-                    setError(null);
 
                     // Redirect to home page
                     router.push("/");
@@ -170,7 +153,6 @@ export default function AdminLayout({ children }: AdminLayoutProps) {
                     // Even if logout fails, clear local state and redirect
                     setIsAuthenticated(false);
                     setUser(null);
-                    setError(null);
                     router.push("/");
                   }
                 }}

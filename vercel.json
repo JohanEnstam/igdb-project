@@ -1,0 +1,26 @@
+{
+  "version": 2,
+  "builds": [
+    {
+      "src": "web_app/frontend/package.json",
+      "use": "@vercel/next",
+      "config": {
+        "distDir": ".next"
+      }
+    }
+  ],
+  "routes": [
+    {
+      "src": "/(.*)",
+      "dest": "web_app/frontend/$1"
+    }
+  ],
+  "env": {
+    "NEXT_PUBLIC_API_URL": "https://igdb-api-d6xpjrmqsa-ew.a.run.app"
+  },
+  "functions": {
+    "web_app/frontend/src/app/api/**/*.ts": {
+      "runtime": "nodejs20.x"
+    }
+  }
+}
