@@ -3,11 +3,10 @@ import type { NextConfig } from "next";
 const nextConfig: NextConfig = {
   // Configure API URL for production
   env: {
-    NEXT_PUBLIC_API_URL: process.env.NEXT_PUBLIC_API_URL || 'https://igdb-api-staging-d6xpjrmqsa-ew.a.run.app',
+    NEXT_PUBLIC_API_URL: process.env.NEXT_PUBLIC_API_URL || 'https://igdb-api-d6xpjrmqsa-ew.a.run.app',
   },
 
-  // Cloud Run-optimized settings
-  output: 'standalone',
+  // Vercel-optimized settings
   compress: true,
   poweredByHeader: false,
 
