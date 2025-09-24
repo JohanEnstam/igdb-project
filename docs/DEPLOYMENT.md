@@ -1,7 +1,7 @@
 # Deployment Guide - IGDB Game Recommendation System
 
-**Datum:** 2025-09-23  
-**Status:** ✅ Backend Working, ✅ Frontend Working, ✅ Pipeline Working, ✅ CI/CD Complete  
+**Datum:** 2025-09-23
+**Status:** ✅ Backend Working, ✅ Frontend Working, ✅ Pipeline Working, ✅ CI/CD Complete
 **Senast uppdaterad:** 2025-09-23
 
 ## 🎯 **Översikt**
@@ -61,7 +61,7 @@ docker build -f web_app/frontend/Dockerfile -t igdb-frontend:latest .
 - **Cloud Run Backend**: `igdb-api-staging` (existing)
 - **Cloud Run Jobs**: `igdb-ingestion`, `igdb-processing`, `igdb-training`
 - **Cloud Scheduler**: `igdb-ingestion-scheduler` (daily data ingestion)
-- **Storage Buckets**: 
+- **Storage Buckets**:
   - `igdb-recommendation-system-data` (processed data)
   - `igdb-recommendation-system-models` (ML models)
   - `igdb-recommendation-system-test` (test bucket)
@@ -72,6 +72,10 @@ docker build -f web_app/frontend/Dockerfile -t igdb-frontend:latest .
 - **Region**: europe-west1
 - **URL**: https://igdb-api-staging-d6xpjrmqsa-ew.a.run.app
 - **Status**: Active and functional
+- **Authentication**: Google OAuth2 integration ✅ **IMPLEMENTED**
+  - Session-baserad autentisering
+  - Skyddade admin endpoints (`/admin/status`)
+  - OAuth endpoints: `/login`, `/auth/callback`, `/logout`
 
 ### **Frontend Deployment** ✅ **WORKING**
 - **Service**: Google Cloud Run
@@ -83,12 +87,12 @@ docker build -f web_app/frontend/Dockerfile -t igdb-frontend:latest .
 ### **Pipeline Jobs Deployment** ✅ **WORKING**
 - **Service**: Google Cloud Run Jobs
 - **Region**: europe-west1
-- **Jobs**: 
+- **Jobs**:
   - `igdb-ingestion` - Data collection from IGDB API
   - `igdb-processing` - Data cleaning and transformation
   - `igdb-training` - ML model training
 - **Status**: Active and functional
-- **Docker Images**: 
+- **Docker Images**:
   - `europe-west1-docker.pkg.dev/igdb-recommendation-system/igdb-repo/igdb-ingestion:latest`
   - `europe-west1-docker.pkg.dev/igdb-recommendation-system/igdb-repo/igdb-processing:latest`
   - `europe-west1-docker.pkg.dev/igdb-recommendation-system/igdb-repo/igdb-training:latest`
@@ -210,10 +214,10 @@ gcloud app deploy app.yaml
 
 ## 🔄 **CI/CD och Monitoring**
 
-**Status:** ✅ Complete  
-**Last Updated:** 2025-09-23  
-**Next Review:** 2025-09-30  
-**Description:** Komplett CI/CD pipeline med automatisk frontend-deployment, monitoring och alerting implementerat.  
+**Status:** ✅ Complete
+**Last Updated:** 2025-09-23
+**Next Review:** 2025-09-30
+**Description:** Komplett CI/CD pipeline med automatisk frontend-deployment, monitoring och alerting implementerat.
 **Referenser:** [CICD_PIPELINE.md](CICD_PIPELINE.md), [LESSONS_LEARNED.md](LESSONS_LEARNED.md)
 
 ### **GitHub Actions Workflows**
@@ -230,7 +234,7 @@ gcloud app deploy app.yaml
 ### **Monitoring och Alerting**
 - **Error Alerts**: ✅ **ACTIVE**
   - Frontend Error Alert (5xx responses)
-  - API Error Alert (5xx responses)  
+  - API Error Alert (5xx responses)
   - Pipeline Job Failure Alert
 - **Latency Alert**: ✅ **PREPARED** (aktiveras när service får trafik)
 - **Notification Channels**: Tomma (kan utökas med email/Slack)
@@ -252,6 +256,17 @@ gcloud app deploy app.yaml
 - `GCP_SA_KEY`: Service account key for GCP access
 - `IGDB_CLIENT_ID`: IGDB API client ID
 - `IGDB_CLIENT_SECRET`: IGDB API client secret
+- `GOOGLE_CLIENT_ID`: Google OAuth2 client ID (backend auth) ✅ **IMPLEMENTED**
+- `GOOGLE_CLIENT_SECRET`: Google OAuth2 client secret (backend auth) ✅ **IMPLEMENTED**
+- `SESSION_SECRET_KEY`: Secret key for FastAPI SessionMiddleware ✅ **IMPLEMENTED**
+
+### **OAuth Configuration**
+- **Google OAuth Console**: Konfigurerad med både production och development URIs
+  - Production: `https://igdb-api-staging-d6xpjrmqsa-ew.a.run.app/auth/callback`
+  - Development: `http://localhost:8080/auth/callback`
+- **Authorized JavaScript Origins**: Både production och localhost
+- **Scopes**: `openid email profile`
+- **Session Security**: Säker secret key för session-hantering
 
 ### **Security Scanning**
 - **Container Scanning**: Trivy vulnerability scanner
@@ -279,17 +294,17 @@ gcloud app deploy app.yaml
 4. **Step 4**: CI/CD Integration and Monitoring ✅ **COMPLETE**
 
 ### **Optional Improvements**
-1. **Monitoring Enhancement**: 
+1. **Monitoring Enhancement**:
    - Aktivera latency alert när frontend får trafik
    - Lägg till email/Slack notification channels
    - Skapa Cloud Monitoring dashboard
-2. **Cost Optimization**: 
+2. **Cost Optimization**:
    - Implementera budget alerts
    - Regular cleanup av gamla Docker images
-3. **Advanced CI/CD**: 
+3. **Advanced CI/CD**:
    - Blue-green deployments för zero-downtime
    - Automatic rollbacks på deployment failures
-4. **Testing Enhancement**: 
+4. **Testing Enhancement**:
    - Comprehensive deployment testing
    - Integration tests för pipeline jobs
 
@@ -304,10 +319,10 @@ gcloud app deploy app.yaml
 
 ## 🧹 **GCP Resource Cleanup**
 
-**Status:** ✅ Complete  
-**Last Updated:** 2025-09-23  
-**Next Review:** 2025-09-30  
-**Description:** Tog bort överblivna resurser från experimentering. Endast aktiva Cloud Run services, jobs, och buckets kvar.  
+**Status:** ✅ Complete
+**Last Updated:** 2025-09-23
+**Next Review:** 2025-09-30
+**Description:** Tog bort överblivna resurser från experimentering. Endast aktiva Cloud Run services, jobs, och buckets kvar.
 **Referenser:** [GCP_CURRENT_STATE.md](GCP_CURRENT_STATE.md)
 
 ### Cleanup Summary
@@ -371,6 +386,6 @@ gcloud run services logs <service-name> --region=europe-west1
 
 ---
 
-**Senast uppdaterad:** 2025-01-23  
-**Uppdaterad av:** AI Assistant  
+**Senast uppdaterad:** 2025-01-23
+**Uppdaterad av:** AI Assistant
 **Nästa review:** 2025-02-23

@@ -73,18 +73,36 @@ IGDB API → Raw Data → Cleaned Data → Feature Extraction → Trained Model 
 
 ### Request Flow
 
+#### **Public Requests**
 ```text
 User → API → Model Registry → Cloud Storage → ML Model → Recommendations → User
 ```
 
+#### **Admin Requests** ✅ **IMPLEMENTED**
+```text
+User → /login → Google OAuth → /auth/callback → Session Created → /admin/status → Protected Data
+```
+
 ### API Endpoints
 
+#### **Public Endpoints**
 - `GET /games/{id}/recommendations` - Get similar games by ID
 - `POST /recommendations/text` - Text-based recommendations
 - `GET /games/search` - Search games by name/summary
 - `GET /games/{id}` - Get game details
 - `GET /genres`, `/platforms` - List available options
 - `GET /model/status` - Model health check
+- `GET /health` - System health check
+
+#### **Authentication Endpoints** ✅ **IMPLEMENTED**
+- `GET /login` - Initiate Google OAuth flow
+- `GET /auth/callback` - Handle OAuth callback and create session
+- `POST /logout` - Clear session and logout user
+
+#### **Protected Admin Endpoints** ✅ **IMPLEMENTED**
+- `GET /admin/status` - Admin-only system overview (requires Google OAuth)
+  - Returns system status, games count, model info, and user info
+  - Protected by `get_current_user` dependency
 
 ## CI/CD Pipeline
 
@@ -148,21 +166,21 @@ User → API → Model Registry → Cloud Storage → ML Model → Recommendatio
 ### Cloud Run Jobs Pipeline
 
 #### **Pipeline Jobs**
-1. **igdb-ingestion**: 
+1. **igdb-ingestion**:
    - **Purpose**: Data collection from IGDB API
    - **Schedule**: Daily at 02:00 Europe/Stockholm via Cloud Scheduler
    - **Resources**: 1 CPU, 1Gi memory, 1 hour timeout
    - **Output**: Smart ingestion to SQLite database
    - **GCS Integration**: Optional upload to data bucket
 
-2. **igdb-processing**: 
+2. **igdb-processing**:
    - **Purpose**: Data cleaning and transformation
    - **Trigger**: Manual or scheduled execution
    - **Resources**: 1 CPU, 1Gi memory, 30 minutes timeout
    - **Input**: Raw data from ingestion
    - **Output**: Cleaned data to GCS data bucket
 
-3. **igdb-training**: 
+3. **igdb-training**:
    - **Purpose**: ML model training
    - **Trigger**: Manual or scheduled execution
    - **Resources**: 2 CPU, 2Gi memory, 1 hour timeout
