@@ -1,12 +1,12 @@
 # Deployment Guide - IGDB Game Recommendation System
 
-**Datum:** 2025-09-23
-**Status:** ✅ Backend Working, ✅ Frontend Working, ✅ Pipeline Working, ✅ CI/CD Complete
-**Senast uppdaterad:** 2025-09-23
+**Datum:** 2025-09-24
+**Status:** ✅ Backend Working, ✅ Frontend Working, ✅ Pipeline Working, ✅ CI/CD Complete, ✅ Vercel Deployment
+**Senast uppdaterad:** 2025-09-24
 
 ## 🎯 **Översikt**
 
-Detta dokument beskriver den kompletta deployment-strategin för IGDB Game Recommendation System, inklusive CI/CD pipelines, Docker containerization, och GCP deployment.
+Detta dokument beskriver den kompletta deployment-strategin för IGDB Game Recommendation System, inklusive CI/CD pipelines, Docker containerization, GCP deployment, och Vercel frontend deployment.
 
 > **📋 Detaljerad Implementation Plan**: Se [DEPLOYMENT_PLAN.md](DEPLOYMENT_PLAN.md) för en komplett 4-stegs plan med success-kriterier, Terraform-konfiguration och rollback-strategier.
 
@@ -20,8 +20,38 @@ Detta dokument beskriver den kompletta deployment-strategin för IGDB Game Recom
 
 ### **Frontend Service**
 - **Next.js Application**: React-based user interface
-- **Deployment Target**: Cloud Run ✅ **WORKING**
-- **URL**: https://igdb-frontend-d6xpjrmqsa-ew.a.run.app
+- **Deployment Target**: Vercel ✅ **WORKING**
+- **URL**: https://igdb-frontend.vercel.app
+- **Admin Panel**: https://igdb-frontend.vercel.app/admin
+
+## 🌐 **Vercel Frontend Deployment**
+
+### **Configuration**
+- **Framework**: Next.js 15.5.3
+- **Root Directory**: `web_app/frontend/`
+- **Build Command**: `npm run build`
+- **Output Directory**: `.next`
+- **Node.js Version**: 22.x
+
+### **Environment Variables**
+```bash
+NEXT_PUBLIC_API_URL=https://igdb-api-d6xpjrmqsa-ew.a.run.app
+```
+
+### **OAuth Configuration**
+- **Authorized Origins**: https://igdb-frontend.vercel.app
+- **Authorized Redirect URIs**: https://igdb-frontend.vercel.app/auth/callback
+
+### **Deployment Process**
+1. **Automatic**: GitHub integration triggers deployment on commits
+2. **Manual**: `vercel --prod` from project root
+3. **Build Process**: Vercel builds frontend from `web_app/frontend/`
+4. **CDN Distribution**: Global edge network for fast loading
+
+### **Monorepo Configuration**
+- **vercel.json**: Located in `web_app/frontend/`
+- **.vercelignore**: Excludes large files from deployment
+- **Git Integration**: Frontend config files properly tracked
 
 ## 🐳 **Docker Containerization**
 
