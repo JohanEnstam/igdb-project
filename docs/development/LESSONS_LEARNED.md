@@ -1,7 +1,7 @@
 # Lessons Learned - IGDB Game Recommendation System
 
-**Datum:** 2025-09-23  
-**Projekt:** igdb-recommendation-system  
+**Datum:** 2025-09-23
+**Projekt:** igdb-recommendation-system
 **Syfte:** Centraliserad kunskapsbank för deployment-problem och lösningar
 
 ## 🚨 **App Engine Deployment Failure**
@@ -216,7 +216,7 @@ terraform state rm google_storage_bucket.test_bucket
 - **Beskrivning**: Implementera komplett CI/CD pipeline med automatisk frontend-deployment, monitoring och alerting
 
 ### **Implementation Details**
-1. **GitHub Actions Frontend Workflow**: 
+1. **GitHub Actions Frontend Workflow**:
    - Skapad `deploy-frontend.yml` för automatisk Cloud Run deployment
    - Terraform-integration för Infrastructure as Code
    - Docker build och push till Artifact Registry
@@ -238,10 +238,10 @@ terraform state rm google_storage_bucket.test_bucket
    - Log filtering med resource-baserad sökning
 
 ### **Technical Challenges**
-1. **Latency Metric Availability**: 
+1. **Latency Metric Availability**:
    - Problem: `run.googleapis.com/request/latencies` metric inte tillgänglig
    - Solution: Kommenterad tills service får trafik, korrekt syntax förberedd
-2. **gcloud CLI Commands**: 
+2. **gcloud CLI Commands**:
    - Problem: Felaktiga kommandon för Cloud Run v2
    - Solution: Använd `alpha`-flaggan och korrekt resource-filtering
 
@@ -267,14 +267,14 @@ terraform state rm google_storage_bucket.test_bucket
 4. **Step 4**: CI/CD Integration and Monitoring ✅ **COMPLETE**
 
 ### **Optional Improvements**
-1. **Monitoring Enhancement**: 
+1. **Monitoring Enhancement**:
    - Aktivera latency alert när frontend får trafik
    - Lägg till email/Slack notification channels
    - Skapa Cloud Monitoring dashboard
-2. **Advanced CI/CD**: 
+2. **Advanced CI/CD**:
    - Blue-green deployments för zero-downtime
    - Automatic rollbacks på deployment failures
-3. **Testing Enhancement**: 
+3. **Testing Enhancement**:
    - Comprehensive deployment testing
    - Integration tests för pipeline jobs
 
@@ -312,6 +312,6 @@ terraform state rm google_storage_bucket.test_bucket
 
 ---
 
-**Senast uppdaterad:** 2025-01-23  
-**Uppdaterad av:** AI Assistant  
+**Senast uppdaterad:** 2025-01-23
+**Uppdaterad av:** AI Assistant
 **Nästa review:** 2025-02-23

@@ -1,8 +1,8 @@
 # GCP Current State Documentation
 
-**Datum:** 2025-09-23  
-**Projekt:** igdb-recommendation-system  
-**Projektnummer:** 18815352760  
+**Datum:** 2025-09-23
+**Projekt:** igdb-recommendation-system
+**Projektnummer:** 18815352760
 **Region:** europe-west1 (primär)
 
 ## 📊 Översikt
@@ -11,10 +11,10 @@ Detta dokument beskriver den aktuella tillståndet av vår Google Cloud Platform
 
 ## 🧹 Cleanup av Experimentella Resurser
 
-**Status:** ✅ Complete  
-**Last Updated:** 2025-09-23  
-**Next Review:** 2025-09-30  
-**Description:** Rensade gamla Cloud Storage buckets, inaktiverade Compute Engine API, och uppdaterade Terraform state efter Steg 1-3 implementation.  
+**Status:** ✅ Complete
+**Last Updated:** 2025-09-23
+**Next Review:** 2025-09-30
+**Description:** Rensade gamla Cloud Storage buckets, inaktiverade Compute Engine API, och uppdaterade Terraform state efter Steg 1-3 implementation.
 **Referenser:** [DEPLOYMENT.md](DEPLOYMENT.md), [LESSONS_LEARNED.md](LESSONS_LEARNED.md)
 
 ### Borttagna Resurser
@@ -156,7 +156,7 @@ Error: Cannot find module '/workspace/server.js'
 | igdb-processing | latest | ~200MB | ✅ Active |
 | igdb-training | latest | ~200MB | ✅ Active |
 
-**Total Size:** ~650MB (efter cleanup)  
+**Total Size:** ~650MB (efter cleanup)
 **Status:** ✅ Clean och optimerad
 
 ## 👥 Service Accounts
@@ -245,6 +245,6 @@ Error: Cannot find module '/workspace/server.js'
 
 ---
 
-**Senast uppdaterad:** 2025-09-23  
-**Uppdaterad av:** AI Assistant  
+**Senast uppdaterad:** 2025-09-23
+**Uppdaterad av:** AI Assistant
 **Nästa review:** 2025-09-30

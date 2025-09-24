@@ -1,8 +1,8 @@
 # CI/CD Pipeline Documentation
 
-**Status:** ✅ Complete  
-**Last Updated:** 2025-09-23  
-**Next Review:** 2025-09-30  
+**Status:** ✅ Complete
+**Last Updated:** 2025-09-23
+**Next Review:** 2025-09-30
 **Description:** Komplett CI/CD pipeline med automatisk frontend-deployment, monitoring och alerting implementerat.
 
 ## 🏗️ **Pipeline Architecture**
