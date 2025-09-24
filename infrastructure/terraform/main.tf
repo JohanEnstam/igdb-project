@@ -6,8 +6,8 @@ terraform {
     }
   }
   backend "gcs" {
-    bucket  = "igdb-recommendation-system-tf-state"
-    prefix  = "terraform/state"
+    bucket = "igdb-recommendation-system-tf-state"
+    prefix = "terraform/state"
   }
 }
 
@@ -21,7 +21,7 @@ provider "google" {
 # Artifact Registry for Docker images
 resource "google_artifact_registry_repository" "igdb_repo" {
   location      = "europe-west1"
-  repository_id  = "igdb-repo"
+  repository_id = "igdb-repo"
   description   = "Docker repository for IGDB recommendation system"
   format        = "DOCKER"
 }
@@ -44,7 +44,7 @@ resource "google_cloud_run_v2_service" "frontend" {
       }
       env {
         name  = "NEXT_PUBLIC_API_URL"
-        value = "https://igdb-api-staging-d6xpjrmqsa-ew.a.run.app"
+        value = google_cloud_run_v2_service.api.uri
       }
       resources {
         limits = {
@@ -65,6 +65,74 @@ resource "google_cloud_run_service_iam_member" "frontend_public_access" {
   member   = "allUsers"
 }
 
+# API Cloud Run Service
+resource "google_cloud_run_v2_service" "api" {
+  name     = "igdb-api"
+  location = "europe-west1"
+  ingress  = "INGRESS_TRAFFIC_ALL"
+
+  template {
+    scaling {
+      min_instance_count = 0
+      max_instance_count = 10
+    }
+    containers {
+      image = "europe-west1-docker.pkg.dev/igdb-recommendation-system/igdb-repo/igdb-api:latest"
+      ports {
+        container_port = 8080
+      }
+      env {
+        name  = "ENVIRONMENT"
+        value = "production"
+      }
+      env {
+        name = "GOOGLE_CLIENT_ID" # pragma: allowlist secret
+        value_source {
+          secret_key_ref {
+            secret  = "GOOGLE_CLIENT_ID" # pragma: allowlist secret
+            version = "latest"
+          }
+        }
+      }
+      env {
+        name = "GOOGLE_CLIENT_SECRET" # pragma: allowlist secret
+        value_source {
+          secret_key_ref {
+            secret  = "GOOGLE_CLIENT_SECRET" # pragma: allowlist secret
+            version = "latest"
+          }
+        }
+      }
+      env {
+        name = "SESSION_SECRET_KEY" # pragma: allowlist secret
+        value_source {
+          secret_key_ref {
+            secret  = "SESSION_SECRET_KEY" # pragma: allowlist secret
+            version = "latest"
+          }
+        }
+      }
+      resources {
+        limits = {
+          cpu    = "2"
+          memory = "2Gi"
+        }
+      }
+    }
+    service_account = "18815352760-compute@developer.gserviceaccount.com"
+    timeout         = "300s"
+  }
+}
+
+# Public access for API
+resource "google_cloud_run_service_iam_member" "api_public_access" {
+  project  = "igdb-recommendation-system"
+  location = "europe-west1"
+  service  = google_cloud_run_v2_service.api.name
+  role     = "roles/run.invoker"
+  member   = "allUsers"
+}
+
 # IAM bindings for Cloud Run Jobs to access existing secrets
 resource "google_secret_manager_secret_iam_member" "ingestion_job_secret_access" {
   secret_id = "IGDB_CLIENT_ID"
@@ -74,6 +142,28 @@ resource "google_secret_manager_secret_iam_member" "ingestion_job_secret_access"
 
 resource "google_secret_manager_secret_iam_member" "ingestion_job_secret_access_secret" {
   secret_id = "IGDB_CLIENT_SECRET"
+  role      = "roles/secretmanager.secretAccessor"
+  member    = "serviceAccount:18815352760-compute@developer.gserviceaccount.com"
+}
+
+# OAuth secrets for API authentication (secrets already exist in Secret Manager)
+# Note: These secrets were created manually and are managed outside Terraform
+
+# IAM bindings for OAuth secrets
+resource "google_secret_manager_secret_iam_member" "api_oauth_secret_access" {
+  secret_id = "GOOGLE_CLIENT_ID"
+  role      = "roles/secretmanager.secretAccessor"
+  member    = "serviceAccount:18815352760-compute@developer.gserviceaccount.com"
+}
+
+resource "google_secret_manager_secret_iam_member" "api_oauth_secret_access_secret" {
+  secret_id = "GOOGLE_CLIENT_SECRET"
+  role      = "roles/secretmanager.secretAccessor"
+  member    = "serviceAccount:18815352760-compute@developer.gserviceaccount.com"
+}
+
+resource "google_secret_manager_secret_iam_member" "api_session_secret_access" {
+  secret_id = "SESSION_SECRET_KEY"
   role      = "roles/secretmanager.secretAccessor"
   member    = "serviceAccount:18815352760-compute@developer.gserviceaccount.com"
 }
@@ -127,19 +217,19 @@ resource "google_cloud_run_v2_job" "ingestion_job" {
           value = "raw/"
         }
         env {
-          name = "IGDB_CLIENT_ID"
+          name = "IGDB_CLIENT_ID" # pragma: allowlist secret
           value_source {
             secret_key_ref {
-              secret  = "IGDB_CLIENT_ID"
+              secret  = "IGDB_CLIENT_ID" # pragma: allowlist secret
               version = "latest"
             }
           }
         }
         env {
-          name = "IGDB_CLIENT_SECRET"
+          name = "IGDB_CLIENT_SECRET" # pragma: allowlist secret
           value_source {
             secret_key_ref {
-              secret  = "IGDB_CLIENT_SECRET"
+              secret  = "IGDB_CLIENT_SECRET" # pragma: allowlist secret
               version = "latest"
             }
           }
@@ -151,7 +241,7 @@ resource "google_cloud_run_v2_job" "ingestion_job" {
           }
         }
       }
-      timeout = "3600s"  # 1 hour timeout
+      timeout = "3600s" # 1 hour timeout
     }
   }
 }
@@ -179,7 +269,7 @@ resource "google_cloud_run_v2_job" "processing_job" {
           }
         }
       }
-      timeout = "1800s"  # 30 minutes timeout
+      timeout = "1800s" # 30 minutes timeout
     }
   }
 }
@@ -211,7 +301,7 @@ resource "google_cloud_run_v2_job" "training_job" {
           }
         }
       }
-      timeout = "3600s"  # 1 hour timeout
+      timeout = "3600s" # 1 hour timeout
     }
   }
 }
@@ -239,7 +329,7 @@ resource "google_cloud_scheduler_job" "ingestion_scheduler" {
 # resource "google_monitoring_alert_policy" "frontend_latency_alert" {
 #   display_name = "Frontend High Latency Alert"
 #   combiner     = "OR"
-#   
+#
 #   conditions {
 #     display_name = "High Latency on igdb-frontend"
 #     condition_threshold {
@@ -247,80 +337,80 @@ resource "google_cloud_scheduler_job" "ingestion_scheduler" {
 #       duration   = "60s"
 #       comparison = "COMPARISON_GT"
 #       threshold_value = 1.0  # 1 second (in seconds for DISTRIBUTION metric)
-#       
+#
 #       aggregations {
 #         alignment_period   = "60s"
 #         per_series_aligner = "ALIGN_PERCENTILE_95"  # 95th percentile for latency
 #       }
 #     }
 #   }
-#   
+#
 #   notification_channels = []  # Can be extended with email/Slack channels later
 # }
 
 resource "google_monitoring_alert_policy" "frontend_error_alert" {
   display_name = "Frontend Error Alert"
   combiner     = "OR"
-  
+
   conditions {
     display_name = "High Error Rate on igdb-frontend"
     condition_threshold {
-      filter     = "metric.type=\"run.googleapis.com/request_count\" AND resource.type=\"cloud_run_revision\" AND resource.label.service_name=\"igdb-frontend\" AND metric.label.response_code_class=\"5xx\""
-      duration   = "60s"
-      comparison = "COMPARISON_GT"
+      filter          = "metric.type=\"run.googleapis.com/request_count\" AND resource.type=\"cloud_run_revision\" AND resource.label.service_name=\"igdb-frontend\" AND metric.label.response_code_class=\"5xx\""
+      duration        = "60s"
+      comparison      = "COMPARISON_GT"
       threshold_value = 1
-      
+
       aggregations {
         alignment_period   = "60s"
         per_series_aligner = "ALIGN_RATE"
       }
     }
   }
-  
+
   notification_channels = []
 }
 
 resource "google_monitoring_alert_policy" "api_error_alert" {
   display_name = "API Error Alert"
   combiner     = "OR"
-  
+
   conditions {
     display_name = "High Error Rate on igdb-api-staging"
     condition_threshold {
-      filter     = "metric.type=\"run.googleapis.com/request_count\" AND resource.type=\"cloud_run_revision\" AND resource.label.service_name=\"igdb-api-staging\" AND metric.label.response_code_class=\"5xx\""
-      duration   = "60s"
-      comparison = "COMPARISON_GT"
+      filter          = "metric.type=\"run.googleapis.com/request_count\" AND resource.type=\"cloud_run_revision\" AND resource.label.service_name=\"igdb-api-staging\" AND metric.label.response_code_class=\"5xx\""
+      duration        = "60s"
+      comparison      = "COMPARISON_GT"
       threshold_value = 1
-      
+
       aggregations {
         alignment_period   = "60s"
         per_series_aligner = "ALIGN_RATE"
       }
     }
   }
-  
+
   notification_channels = []
 }
 
 resource "google_monitoring_alert_policy" "job_failure_alert" {
   display_name = "Pipeline Job Failure Alert"
   combiner     = "OR"
-  
+
   conditions {
     display_name = "Job Execution Failed"
     condition_threshold {
-      filter     = "metric.type=\"run.googleapis.com/job/completed_task_attempt_count\" AND resource.type=\"cloud_run_job\" AND metric.label.result=\"failed\""
-      duration   = "300s"
-      comparison = "COMPARISON_GT"
+      filter          = "metric.type=\"run.googleapis.com/job/completed_task_attempt_count\" AND resource.type=\"cloud_run_job\" AND metric.label.result=\"failed\""
+      duration        = "300s"
+      comparison      = "COMPARISON_GT"
       threshold_value = 0
-      
+
       aggregations {
         alignment_period   = "300s"
         per_series_aligner = "ALIGN_RATE"
       }
     }
   }
-  
+
   notification_channels = []
 }
 
@@ -328,6 +418,11 @@ resource "google_monitoring_alert_policy" "job_failure_alert" {
 output "frontend_url" {
   description = "URL of the frontend Cloud Run service"
   value       = google_cloud_run_v2_service.frontend.uri
+}
+
+output "api_url" {
+  description = "URL of the API Cloud Run service"
+  value       = google_cloud_run_v2_service.api.uri
 }
 
 output "artifact_registry_url" {
