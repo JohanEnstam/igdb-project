@@ -1,0 +1,24 @@
+# Ignore large directories
+node_modules/
+.terraform/
+venv/
+.next/
+build/
+dist/
+
+# Ignore large files
+*.pkl
+*.model
+*.joblib
+*.h5
+
+# Ignore data files
+data/
+models/
+logs/
+
+# Ignore development files
+.env*
+*.log
+*.tmp
+*.temp
