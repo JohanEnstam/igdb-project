@@ -145,7 +145,7 @@ gh run list --limit 5
 - Zero security vulnerabilities
 - Production-ready architecture
 
-See `docs/CURRENT_STATUS.md` for detailed next steps and decision points.
+See [docs/README.md](docs/README.md) for complete documentation and project structure.
 
 ## Licens
 
