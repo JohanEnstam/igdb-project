@@ -23,15 +23,15 @@
                                                         ▼
                        ┌─────────────────┐    ┌─────────────────┐
                        │   Web App API   │◀───│   Web Frontend  │
-                       │   (FastAPI)     │    │    (Future)     │
-                       │ Runtime Loading │    │                 │
+                       │   (FastAPI)     │    │   (Next.js)     │
+                       │ Runtime Loading │    │   (Vercel)      │
                        └─────────────────┘    └─────────────────┘
-                                │
-                                ▼
-                       ┌─────────────────┐
-                       │   CI/CD Pipeline│
-                       │ (GitHub Actions)│
-                       └─────────────────┘
+                                │                        │
+                                ▼                        ▼
+                       ┌─────────────────┐    ┌─────────────────┐
+                       │   CI/CD Pipeline│    │   Vercel CDN    │
+                       │ (GitHub Actions)│    │   (Frontend)    │
+                       └─────────────────┘    └─────────────────┘
                                 │
                                 ▼
                        ┌─────────────────┐
@@ -39,6 +39,46 @@
                        │   (GCP)         │
                        └─────────────────┘
 ```
+
+## Project Structure (Monorepo)
+
+### Repository Organization
+
+```text
+igdb-project/                    # Monorepo Root
+├── data_pipeline/              # Data Pipeline (Factory)
+│   ├── ingestion/             # IGDB API data collection
+│   ├── processing/            # Data cleaning & transformation
+│   ├── training/              # ML model training
+│   └── deployment/            # Model serving setup
+├── web_app/                   # Web Application (Store)
+│   ├── api/                   # FastAPI backend
+│   └── frontend/              # Next.js frontend (Vercel)
+├── shared/                    # Shared utilities
+├── infrastructure/            # Terraform/Pulumi for GCP
+├── docs/                      # Documentation
+├── tests/                     # Test suites
+├── models/                    # ML model files
+├── data/                      # Local data storage
+├── vercel.json               # Vercel configuration (in frontend/)
+├── .vercelignore             # Vercel file exclusions
+└── .gitignore                # Git file exclusions
+```
+
+### Monorepo Benefits
+
+- **Unified Development**: All components in single repository
+- **Shared Dependencies**: Common utilities and configurations
+- **Atomic Changes**: Related changes across components
+- **Simplified CI/CD**: Single pipeline for entire system
+- **Context Preservation**: Full system view in IDE
+
+### Deployment Strategy
+
+- **Frontend**: Vercel (Next.js) - `web_app/frontend/`
+- **Backend**: Google Cloud Run (FastAPI) - `web_app/api/`
+- **Data Pipeline**: Google Cloud Run Jobs - `data_pipeline/`
+- **Infrastructure**: Terraform - `infrastructure/`
 
 ## Data Pipeline (Factory)
 
