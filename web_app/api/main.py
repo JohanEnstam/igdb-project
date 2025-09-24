@@ -182,6 +182,7 @@ async def auth_callback(request: Request):
     if not oauth or not hasattr(oauth, "google"):
         raise HTTPException(status_code=503, detail="OAuth not configured")
     try:
+        # Use Authlib's built-in OAuth handling which properly validates state
         token = await oauth.google.authorize_access_token(request)
 
         # Get user info from Google API using access token
@@ -196,14 +197,19 @@ async def auth_callback(request: Request):
         if not userinfo:
             raise HTTPException(status_code=401, detail="Invalid token")
 
+        logger.info(f"User authenticated: {userinfo.get('email')}")
+
         request.session["user"] = {
             "email": userinfo.get("email"),
             "name": userinfo.get("name"),
             "picture": userinfo.get("picture"),
             "sub": userinfo.get("id"),
         }
-        # Redirect to admin status by default after login
-        return RedirectResponse(url="/admin/status")
+        # Redirect to frontend admin dashboard after login
+        frontend_url = os.environ.get("FRONTEND_URL", "http://localhost:3000")
+        redirect_url = f"{frontend_url}/admin"
+        logger.info(f"Redirecting to frontend: {redirect_url}")
+        return RedirectResponse(url=redirect_url)
     except HTTPException:
         raise
     except Exception as e:
