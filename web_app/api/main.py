@@ -13,11 +13,20 @@ import logging
 import os
 import sys
 from pathlib import Path
-from typing import List, Dict, Optional
-from fastapi import FastAPI, HTTPException, Query, Path as PathParam
+from typing import List, Dict, Optional, Any
+from fastapi import FastAPI, HTTPException, Query, Path as PathParam, Depends
 from fastapi.middleware.cors import CORSMiddleware
 from pydantic import BaseModel, Field
 import uvicorn
+from starlette.middleware.sessions import SessionMiddleware
+from starlette.requests import Request
+from starlette.responses import RedirectResponse, JSONResponse
+from authlib.integrations.starlette_client import OAuth
+from dotenv import load_dotenv
+import httpx
+
+# Load environment variables from .env.local
+load_dotenv(Path(__file__).parent.parent.parent / ".env.local")
 
 # Add project root to path for imports - MUST be before importing our modules
 sys.path.append(str(Path(__file__).parent.parent.parent))
@@ -53,6 +62,34 @@ app.add_middleware(
     allow_methods=["*"],
     allow_headers=["*"],
 )
+
+# Session middleware (required for OAuth state and user session)
+SESSION_SECRET_KEY = os.environ.get("SESSION_SECRET_KEY", "dev-insecure-session-key")
+app.add_middleware(SessionMiddleware, secret_key=SESSION_SECRET_KEY)
+
+# OAuth (Google) configuration
+GOOGLE_CLIENT_ID = os.environ.get("GOOGLE_CLIENT_ID")
+GOOGLE_CLIENT_SECRET = os.environ.get("GOOGLE_CLIENT_SECRET")
+
+oauth = OAuth()
+if GOOGLE_CLIENT_ID and GOOGLE_CLIENT_SECRET:
+    try:
+        oauth.register(
+            name="google",
+            client_id=GOOGLE_CLIENT_ID,
+            client_secret=GOOGLE_CLIENT_SECRET,
+            server_metadata_url="https://accounts.google.com/.well-known/openid-configuration",
+            client_kwargs={"scope": "openid email profile"},
+        )
+        logger.info("Google OAuth configured successfully")
+    except Exception as e:
+        logger.error(f"Failed to configure Google OAuth: {e}")
+        oauth = None
+else:
+    logger.warning(
+        "Google OAuth not configured. Set GOOGLE_CLIENT_ID and GOOGLE_CLIENT_SECRET."
+    )
+    oauth = None
 
 # Global model instance
 recommendation_model = None
@@ -109,6 +146,77 @@ class ModelStatus(BaseModel):
     games_count: int = Field(..., description="Number of games in model")
     feature_count: int = Field(..., description="Number of features")
     model_type: str = Field(..., description="Type of recommendation model")
+
+
+def get_current_user(request: Request) -> Dict[str, Any]:
+    """Dependency to ensure a logged-in Google user exists in the session.
+
+    Raises:
+        HTTPException: 401 if user not authenticated
+    """
+    user = request.session.get("user") if hasattr(request, "session") else None
+    if not user:
+        raise HTTPException(status_code=401, detail="Not authenticated")
+    return user
+
+
+@app.get("/login")
+async def login(request: Request):
+    """Initiate Google OAuth login flow."""
+    if not oauth or not hasattr(oauth, "google"):
+        raise HTTPException(status_code=503, detail="OAuth not configured")
+    try:
+        redirect_uri = os.environ.get(
+            "OAUTH_REDIRECT_URI",
+            str(request.url_for("auth_callback")),
+        )
+        return await oauth.google.authorize_redirect(request, redirect_uri)
+    except Exception as e:
+        logger.error(f"Login initiation failed: {e}")
+        raise HTTPException(status_code=500, detail="OAuth initiation failed")
+
+
+@app.get("/auth/callback", name="auth_callback")
+async def auth_callback(request: Request):
+    """Handle Google OAuth callback and store user in session."""
+    if not oauth or not hasattr(oauth, "google"):
+        raise HTTPException(status_code=503, detail="OAuth not configured")
+    try:
+        token = await oauth.google.authorize_access_token(request)
+
+        # Get user info from Google API using access token
+        userinfo_url = "https://www.googleapis.com/oauth2/v2/userinfo"
+        async with httpx.AsyncClient() as client:
+            response = await client.get(
+                userinfo_url,
+                headers={"Authorization": f"Bearer {token['access_token']}"},
+            )
+            userinfo = response.json()
+
+        if not userinfo:
+            raise HTTPException(status_code=401, detail="Invalid token")
+
+        request.session["user"] = {
+            "email": userinfo.get("email"),
+            "name": userinfo.get("name"),
+            "picture": userinfo.get("picture"),
+            "sub": userinfo.get("id"),
+        }
+        # Redirect to admin status by default after login
+        return RedirectResponse(url="/admin/status")
+    except HTTPException:
+        raise
+    except Exception as e:
+        logger.error(f"OAuth callback failed: {e}")
+        raise HTTPException(status_code=500, detail="OAuth callback failed")
+
+
+@app.post("/logout")
+async def logout(request: Request):
+    """Clear session and logout user."""
+    if hasattr(request, "session"):
+        request.session.clear()
+    return JSONResponse({"detail": "logged out"})
 
 
 @app.on_event("startup")
@@ -245,6 +353,22 @@ async def get_model_status():
         else 0,
         model_type="content_based_recommendation",
     )
+
+
+@app.get("/admin/status")
+async def admin_status(user: Dict[str, Any] = Depends(get_current_user)):
+    """Protected admin status endpoint showing basic system health.
+
+    Returns:
+        Dict with model registry health, games count, and model type
+    """
+    registry = model_registry or ModelRegistry()
+    return {
+        "status": registry.health_check(),
+        "games_count": len(games_data) if games_data else 0,
+        "model": "content_based_recommendation",
+        "user": {"email": user.get("email"), "name": user.get("name")},
+    }
 
 
 @app.get("/games/{game_id}/recommendations", response_model=List[GameRecommendation])
