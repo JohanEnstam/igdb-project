@@ -30,6 +30,10 @@ ENV/
 env.bak/
 venv.bak/
 
+# Python lib directories (but allow frontend src/lib)
+lib/
+!web_app/frontend/src/lib/
+
 # IDE
 .vscode/
 .idea/
