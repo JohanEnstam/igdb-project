@@ -52,12 +52,19 @@ logs/
 
 # Data files
 *.csv
-*.json
 *.parquet
 *.pickle
 *.pkl
 data/
 datasets/
+
+# JSON files (but allow package.json)
+*.json
+!package.json
+!package-lock.json
+!tsconfig.json
+!next.config.ts
+!components.json
 
 # Model files
 *.model
