@@ -235,7 +235,7 @@ curl -X POST "http://localhost:8000/recommendations/text" \
 ```bash
 # Run API container locally (port 8080 for Cloud Run compatibility)
 docker run --rm -p 8080:8080 -e PORT=8080 \
-  gcr.io/igdb-recommendation-system/igdb-api:latest
+  europe-west1-docker.pkg.dev/igdb-recommendation-system/igdb-repo/igdb-api:latest
 
 # Check CI/CD status (all pipelines working!)
 gh run list --limit 5

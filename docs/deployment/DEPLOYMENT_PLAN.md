@@ -57,7 +57,7 @@ Each step includes:
 3. **Artifact Registry Cleanup**
    - Old Docker images (>30 days) deleted from:
      - `europe-west1-docker.pkg.dev/igdb-recommendation-system/igdb-repo`
-     - `us-docker.pkg.dev/igdb-recommendation-system/gcr.io`
+     - `europe-west1-docker.pkg.dev/igdb-recommendation-system/igdb-repo`
    - Verification: Total size <2GB (compared to current 8GB)
 
 4. **Test Resource Deployed**

@@ -178,7 +178,7 @@ User → /login → Google OAuth → /auth/callback → Session Created → /adm
 4. **igdb-api**: FastAPI web application (port 8080)
 
 #### **Container Registry**
-- **Registry**: `gcr.io/igdb-recommendation-system/`
+- **Registry**: `europe-west1-docker.pkg.dev/igdb-recommendation-system/igdb-repo/`
 - **Images**: Automatically built and pushed on main branch
 - **Tags**: Latest, commit SHA, branch names
 

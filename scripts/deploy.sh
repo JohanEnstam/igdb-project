@@ -7,7 +7,7 @@ set -e  # Exit on any error
 # Configuration
 PROJECT_ID="igdb-recommendation-system"
 REGION="europe-west1"
-REGISTRY="gcr.io"
+REGISTRY="europe-west1-docker.pkg.dev/igdb-recommendation-system/igdb-repo"
 ENVIRONMENT="${1:-staging}"  # Default to staging
 
 # Colors for output
@@ -76,8 +76,8 @@ build_images() {
 
         docker build \
             -f "data_pipeline/$service/Dockerfile" \
-            -t "$REGISTRY/$PROJECT_ID/igdb-$service:latest" \
-            -t "$REGISTRY/$PROJECT_ID/igdb-$service:$ENVIRONMENT" \
+            -t "$REGISTRY/igdb-$service:latest" \
+            -t "$REGISTRY/igdb-$service:$ENVIRONMENT" \
             .
 
         log_success "Built igdb-$service image"
@@ -88,16 +88,16 @@ build_images() {
 push_images() {
     log_info "Pushing images to registry..."
 
-    # Configure Docker for GCR
-    gcloud auth configure-docker --quiet
+    # Configure Docker for Artifact Registry
+    gcloud auth configure-docker europe-west1-docker.pkg.dev --quiet
 
     local services=("ingestion" "processing" "training")
 
     for service in "${services[@]}"; do
         log_info "Pushing igdb-$service image..."
 
-        docker push "$REGISTRY/$PROJECT_ID/igdb-$service:latest"
-        docker push "$REGISTRY/$PROJECT_ID/igdb-$service:$ENVIRONMENT"
+        docker push "$REGISTRY/igdb-$service:latest"
+        docker push "$REGISTRY/igdb-$service:$ENVIRONMENT"
 
         log_success "Pushed igdb-$service image"
     done
@@ -110,7 +110,7 @@ deploy_services() {
     # Deploy Data Ingestion Service
     log_info "Deploying Data Ingestion Service..."
     gcloud run deploy "igdb-ingestion$([ "$ENVIRONMENT" != "production" ] && echo "-$ENVIRONMENT")" \
-        --image "$REGISTRY/$PROJECT_ID/igdb-ingestion:$ENVIRONMENT" \
+        --image "$REGISTRY/igdb-ingestion:$ENVIRONMENT" \
         --platform managed \
         --region "$REGION" \
         --set-secrets "IGDB_CLIENT_ID=IGDB_CLIENT_ID:latest,IGDB_CLIENT_SECRET=IGDB_CLIENT_SECRET:latest" \
@@ -124,7 +124,7 @@ deploy_services() {
     # Deploy Data Processing Service
     log_info "Deploying Data Processing Service..."
     gcloud run deploy "igdb-processing$([ "$ENVIRONMENT" != "production" ] && echo "-$ENVIRONMENT")" \
-        --image "$REGISTRY/$PROJECT_ID/igdb-processing:$ENVIRONMENT" \
+        --image "$REGISTRY/igdb-processing:$ENVIRONMENT" \
         --platform managed \
         --region "$REGION" \
         --set-env-vars "ENVIRONMENT=$ENVIRONMENT" \
@@ -137,7 +137,7 @@ deploy_services() {
     # Deploy ML Training Service
     log_info "Deploying ML Training Service..."
     gcloud run deploy "igdb-training$([ "$ENVIRONMENT" != "production" ] && echo "-$ENVIRONMENT")" \
-        --image "$REGISTRY/$PROJECT_ID/igdb-training:$ENVIRONMENT" \
+        --image "$REGISTRY/igdb-training:$ENVIRONMENT" \
         --platform managed \
         --region "$REGION" \
         --set-env-vars "ENVIRONMENT=$ENVIRONMENT" \

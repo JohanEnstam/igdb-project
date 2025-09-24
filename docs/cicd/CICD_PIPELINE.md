@@ -103,7 +103,7 @@ strategy:
 - `branch-feature`: Feature branch builds
 
 ### **Container Registry**
-- **Registry**: `gcr.io/igdb-recommendation-system`
+- **Registry**: `europe-west1-docker.pkg.dev/igdb-recommendation-system/igdb-repo`
 - **Images**: `igdb-ingestion`, `igdb-processing`, `igdb-training`
 
 ## 🧪 **Testing Strategy**
